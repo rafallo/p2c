@@ -1,4 +1,7 @@
-p2c
+P2C
 ===
 
-New way to watch video
+### New way to watch video!
+
+More info soon...
+

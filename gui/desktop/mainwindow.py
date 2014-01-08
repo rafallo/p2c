@@ -6,9 +6,9 @@ import os
 import signal
 
 from PyQt5.QtCore import QSettings, QTimer
-from PyQt5.QtWidgets import QMainWindow, QTreeWidgetItem, QListWidgetItem, QLabel
+from PyQt5.QtWidgets import QMainWindow, QTreeWidgetItem, QListWidgetItem, QLabel, QStyle
 from PyQt5.QtCore import QUrl
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent, QMediaResource, QMediaPlaylist
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent, QMediaResource
 
 from p2c.app import Application
 from gui.desktop.ui_mainwindow import Ui_MainWindow
@@ -36,17 +36,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def play(self, movie: Movie):
         self.app.play(movie)
-        if self.media_player is None:
-            self.media_player = QMediaPlayer(self.videoArea,
-                QMediaPlayer.VideoSurface)
-            self.media_player.setVideoOutput(self.videoArea.videoSurface())
-        file_name = movie.get_target_path()
-        mimetype = mimetypes.guess_type(file_name)[0]
-        logger.debug("Found mimetype: {}".format(mimetype))
-        media_res = QMediaResource(QUrl.fromLocalFile(file_name), mimetype)
-        media = QMediaContent(media_res)
-        self.media_player.setMedia(media)
         self.media_player.play()
+        self.playButton.setEnabled(True)
 
     def connect_app(self, app: Application):
         self.app = app
@@ -69,10 +60,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             data= {}
             torrent_ui = self.current_category.get_torrents()[index]
             torrent = self.app.get_torrent(torrent_ui)
-            if torrent.has_torrent_info():
+            if torrent and torrent.has_torrent_info():
                 movie = torrent.get_downloading_movie()
                 if movie:
                     data['movie'] = movie.name
+                    if self.media_player:
+                        self.positionSlider.setBackgroundValue(movie.progress * self.media_player.duration())
                     data['movie progress'] = "{0:.2f}%".format(movie.progress * 100)
                     data['can_play'] = movie.can_play()
                 data.update(torrent.get_status())
@@ -85,29 +78,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             text="select item"
         self.statusArea.setText(text)
 
-#        self.statusbar.removeWidget(self.statusbarWidget)
-#        if(torrent.has_torrent_info()):
-#            self.statusbarWidget = QLabel("Downloading...")
-#        else:
-#            self.statusbarWidget = QLabel("Getting metadata...")
-#        self.statusbar.addWidget(self.statusbarWidget)
-
     def run_torrent(self, item):
         index = self.itemList.currentIndex()
         torrent_ui = self.current_category.get_torrents()[index.row()]
         torrent = self.app.get_torrent(torrent_ui)
         if(torrent.has_torrent_info()):
             movies = torrent.get_movies()
-            #                        if (len(movies) == 1):
-            #                print("playing %s" % movies[0])
-            #            else:
-            #                print(len(movies))
             # DEVELOPMENT
+
             movie = max(movies, key=lambda x:x.size)
-            print(movie.size)
             torrent.download_file(movie.path)
-            print(movie.can_play())
+
             if(movie.can_play()):
+                self._set_media(movie)
                 self.play(movie)
             else:
                 self.app.buffer(movie)
@@ -125,6 +108,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if(self.current_category == category):
             self.itemList.addItems(list(items))
 
+    def toggle_player(self):
+       if self.media_player.state() == QMediaPlayer.PlayingState:
+           self.media_player.pause()
+       else:
+           self.media_player.play()
+
+    def set_player_position(self, position):
+        self.media_player.setPosition(position)
+
+    def media_state_changed(self, state):
+        if state == QMediaPlayer.PlayingState:
+            self.playButton.setIcon(self.videoArea.style().standardIcon(QStyle.SP_MediaPause))
+        else:
+            self.playButton.setIcon(self.videoArea.style().standardIcon(QStyle.SP_MediaPlay))
+
+    def position_changed(self, position):
+        self.positionSlider.setValue(position)
+
+    def duration_changed(self, duration):
+        self.positionSlider.setRange(0, duration)
+
     def _connect_signals(self):
         self.menuTree.currentItemChanged.connect(self.change_category)
         self.itemList.currentItemChanged.connect(self.activate_torrent)
@@ -132,5 +136,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer.timeout.connect(self.update_status)
         self.timer.start(500)
 
+    def _connect_player_signals(self):
+        self.playButton.clicked.connect(self.toggle_player)
+        self.positionSlider.sliderMoved.connect(self.set_player_position)
+        self.media_player.stateChanged.connect(self.media_state_changed)
+        self.media_player.durationChanged.connect(self.duration_changed)
+        self.media_player.positionChanged.connect(self.position_changed)
 
-
+    def _set_media(self, movie: Movie):
+        if self.media_player is None:
+            self.media_player = QMediaPlayer(self.videoArea,
+                QMediaPlayer.VideoSurface)
+            self.media_player.setVideoOutput(self.videoArea.videoSurface())
+            self._connect_player_signals()
+        file_name = movie.get_target_path()
+        mimetype = mimetypes.guess_type(file_name)[0]
+        logger.debug("Found mimetype: {}".format(mimetype))
+        media_res = QMediaResource(QUrl.fromLocalFile(file_name), mimetype)
+        media = QMediaContent(media_res)
+        self.media_player.setMedia(media)

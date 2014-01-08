@@ -8,6 +8,8 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import Qt
+from gui.desktop.lib.bufferedslider import BufferedSlider
 from gui.desktop.lib.videowidget import VideoWidget
 
 class Ui_MainWindow(object):
@@ -39,6 +41,8 @@ class Ui_MainWindow(object):
         self.statusArea.setObjectName("statusArea")
         self.verticalLayout.addWidget(self.statusArea)
 
+
+
         self.videoArea = VideoWidget(frame)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(3)
@@ -47,7 +51,24 @@ class Ui_MainWindow(object):
         self.videoArea.setSizePolicy(sizePolicy)
         self.videoArea.setObjectName("videoArea")
         self.videoArea.setMinimumSize(QtCore.QSize(100, 100))
-        self.verticalLayout.addWidget(self.videoArea)
+
+
+        self.playButton = QtWidgets.QPushButton()
+        self.playButton.setEnabled(False)
+        self.playButton.setIcon(self.videoArea.style().standardIcon(QtWidgets.QStyle.SP_MediaPlay))
+        self.positionSlider = BufferedSlider(Qt.Horizontal)
+        self.positionSlider.setRange(0, 0)
+
+        controlLayout = QtWidgets.QHBoxLayout()
+        controlLayout.setContentsMargins(0, 0, 0, 0)
+        controlLayout.addWidget(self.playButton)
+        controlLayout.addWidget(self.positionSlider)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.videoArea)
+        layout.addLayout(controlLayout)
+
+        self.verticalLayout.addLayout(layout)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)

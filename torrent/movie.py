@@ -19,6 +19,9 @@ class Movie(object):
         self.started = False
         self.downloaded_pieces = 0
 
+    def __str__(self):
+        return self.path
+
     @property
     def name(self):
         return os.path.split(self.path)[-1]
@@ -29,6 +32,7 @@ class Movie(object):
                float(self.last_piece - self.first_piece)
 
     def can_play(self):
+        # TODO: make it better, more intelligent
         # if downloaded block is greater than DOWNLOAD_PIECE_SIZE
         logger.debug("downloaded pieces: {}, piece_length: {}".format(self.downloaded_pieces, self.piece_length))
         if self.downloaded_pieces * self.piece_length > settings.DOWNLOAD_PIECE_SIZE:

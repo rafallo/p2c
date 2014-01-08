@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import base64
+from threading import Thread
 import os
 import logging
 from urllib.parse import urlparse
@@ -15,26 +17,42 @@ class FileManager(object):
         self.torrents = []
 
     def get_torrent_handler(self, torrent: Torrent, session):
+        # TODO: refactor this horrible method
         magnet = torrent.get_magnet()
         t_file = torrent.get_torrent_file()
+        source_path = None
+        url = None
         if t_file:
             source_type = "TORRENT"
-            #raise Exception(t_file)
             parsed = urlparse(t_file, "http")
             url = parsed.geturl()
-            target_path = os.path.join(settings.DOWNLOAD_DIR, parsed.path.split("/")[-1])
-            source = urllib.request.urlretrieve(url, target_path)[0]
-            #source = t_file
+            source_path = os.path.join(settings.DOWNLOAD_DIR,
+                (base64.b64encode(url.encode()).decode() + ".torrent"))
         else:
             source_type = "MAGNET"
             source = magnet
 
         for torrent_obj in self.torrents:
-            if torrent_obj.source_type == source_type and\
-               torrent_obj.source == source:
-                return torrent_obj
+            if torrent_obj.source_type == "TORRENT":
+                if torrent_obj.source_path == source_path:
+                    return torrent_obj
+                else:
+                    pass
+            else:
+                if torrent_obj.source_type == source_type and\
+                   torrent_obj.source == source:
+                    return torrent_obj
 
-        return self._create_torrent_handler(source_type, source, torrent.label, session)
+        if source_type == "TORRENT":
+            # TODO: make it asynchronous
+            def retrieve_and_save(url, source_path, torrent, session):
+                source = urllib.request.urlretrieve(url, source_path)[0]
+                self._create_torrent_handler(source_type, source, source_path,
+                            torrent.label, session)
+            Thread(target=retrieve_and_save, args=(url,source_path, torrent, session)).start()
+        else:
+            return self._create_torrent_handler(source_type, source, source_path,
+            torrent.label, session)
 
     def prioritize_torrents(self, playing: Movie):
         for torrent in self.torrents:
@@ -46,8 +64,10 @@ class FileManager(object):
                 logger.debug("stopping {}".format(torrent.name))
                 torrent.pause_download()
 
-    def _create_torrent_handler(self, source_type, source, label, session):
-        t_obj = TorrentObject(source_type, source, label)
+    def _create_torrent_handler(self, source_type, source, source_path, label,
+                                session):
+        t_obj = TorrentObject(source_type, source, source_path, label)
+        # TODO: make it asynchronous
         t_obj.bind_session(session)
         self.torrents.append(t_obj)
         return t_obj

@@ -4,6 +4,7 @@ import logging
 import threading
 from p2c import settings
 from p2c.exceptions import SessionNotBindedException
+from services.legittorrents import LegitTorrentsService
 from services.tpb import TPBService
 from torrent.manager import FileManager
 from p2c.ui import Torrent
@@ -15,7 +16,7 @@ logger = logging.getLogger("p2c")
 class Application(object):
     def __init__(self):
         self.manager = FileManager()
-        self.services = [TPBService()]
+        self.services = [LegitTorrentsService(), TPBService()]
         self._init_session()
 
         threading.Thread(target=self._prefill_cache).start()
@@ -44,8 +45,7 @@ class Application(object):
         return output
 
     def get_torrent(self, torrent: Torrent):
-        t_handler = self.manager.get_torrent_handler(torrent, self.session)
-        return t_handler
+        return self.manager.get_torrent_handler(torrent, self.session)
 
     def _init_session(self):
         dht_state = self._get_storage_value("dht_state")

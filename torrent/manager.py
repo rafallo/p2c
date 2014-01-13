@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import base64
+import hashlib
 from threading import Thread
 import os
 import logging
@@ -9,12 +10,13 @@ from p2c import settings
 from torrent.torrent import TorrentObject
 from p2c.ui import Torrent
 from torrent.movie import Movie
+from torrent.utils import get_torrent_uniqueness
 
 logger = logging.getLogger("p2c")
 
 class FileManager(object):
     def __init__(self):
-        self.torrents = []
+        self.torrents = {}
 
     def get_torrent_handler(self, torrent: Torrent, session):
         # TODO: refactor this horrible method
@@ -32,15 +34,16 @@ class FileManager(object):
             source_type = "MAGNET"
             source = magnet
 
-        for torrent_obj in self.torrents:
+        for id in self.torrents:
+            torrent_obj = self.torrents[id]
             if torrent_obj.source_type == "TORRENT":
-                if torrent_obj.source_path == source_path:
+                if id == self._get_torrent_uniqueness(source_path):
                     return torrent_obj
                 else:
                     pass
             else:
                 if torrent_obj.source_type == source_type and\
-                   torrent_obj.source == source:
+                   id == self._get_torrent_uniqueness(source):
                     return torrent_obj
 
         if source_type == "TORRENT":
@@ -48,11 +51,13 @@ class FileManager(object):
             def retrieve_and_save(url, source_path, torrent, session):
                 source = urllib.request.urlretrieve(url, source_path)[0]
                 self._create_torrent_handler(source_type, source, source_path,
-                            torrent.label, session)
-            Thread(target=retrieve_and_save, args=(url,source_path, torrent, session)).start()
+                    torrent.label, session)
+
+            Thread(target=retrieve_and_save,
+                args=(url, source_path, torrent, session)).start()
         else:
-            return self._create_torrent_handler(source_type, source, source_path,
-            torrent.label, session)
+            return self._create_torrent_handler(source_type, source,
+                source_path, torrent.label, session)
 
     def prioritize_torrents(self, playing: Movie):
         for torrent in self.torrents:
@@ -66,8 +71,13 @@ class FileManager(object):
 
     def _create_torrent_handler(self, source_type, source, source_path, label,
                                 session):
-        t_obj = TorrentObject(source_type, source, source_path, label)
+        id = self._get_torrent_uniqueness(
+            source_path if source_type == "TORRENT" else source)
+        t_obj = TorrentObject(source_type, source, label)
         # TODO: make it asynchronous
         t_obj.bind_session(session)
-        self.torrents.append(t_obj)
+        self.torrents[id]=t_obj
         return t_obj
+
+    def _get_torrent_uniqueness(self, data):
+        return hashlib.md5(data.encode("utf-8")).digest()

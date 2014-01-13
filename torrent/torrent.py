@@ -14,10 +14,9 @@ SOURCE_TYPES = ("MAGNET", "TORRENT")
 logger = logging.getLogger("p2c")
 
 class TorrentObject(object):
-    def __init__(self, source_type, source, source_path, name):
+    def __init__(self, source_type, source, name):
         """
-        :type source: str magnet or torrent file content
-        :type source_path: str if torrent file path
+        :type source: str magnet or torrent file path
         :type name: str
         :type source_type: str
 
@@ -29,7 +28,6 @@ class TorrentObject(object):
         self.name = name
         self.source_type = source_type
         self.source = source
-        self.source_path = source_path
 
         self.torrent_handler = None
         self._torrent_info = None

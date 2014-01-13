@@ -21,7 +21,5 @@ Application can download movie and play retrieved parts. Some people call it "pr
 ## Getting started
 
 1. Install requirements
-1. 
-```git clone git+ssh://git@github.com/rafallo/p2c.git```
-1.
-```python3.2 gui/desktop/main.py```
+1. ```git clone git+ssh://git@github.com/rafallo/p2c.git```
+1. ```python3.2 gui/desktop/main.py```

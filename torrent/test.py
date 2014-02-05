@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import shutil
 from unittest import TestCase
 import time
@@ -13,9 +14,15 @@ settings.DOWNLOAD_DIR = os.path.join(settings.DOWNLOAD_DIR, "tests")
 
 BIG_MOVIE_TEST = False
 
-MAGNET = "magnet:?xt=urn:btih:1fe752da569939680f975674fe18bf87150edeb7&dn=Test+movie&tr=http://127.0.0.1:9000/"
+MAGNET = "magnet:?xt=urn:btih:1fe752da569939680f975674fe18bf87150edeb7&dn=Test+movie&tr=http://127.0.0.1:9000/announce/"
+# it works! but i have no idea why it not work with localhost tracker
+#MAGNET = "magnet:?xt=urn:btih:ce9fbdaa734cfbc160e8ef9d29072646c09958dd&dn=The.Wolf.of.Wall.Street.2013.DVDSCR.XviD-BiDA&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=udp%3A%2F%2Ftracker.publicbt.com%3A80&tr=udp%3A%2F%2Ftracker.istole.it%3A6969&tr=udp%3A%2F%2Ftracker.ccc.de%3A80&tr=udp%3A%2F%2Fopen.demonii.com%3A1337"
+
 TORRENT_PATH = os.path.join(settings.TEST_DIR, "movie.torrent")
 
+
+logger = logging.getLogger("p2c")
+logger.setLevel(logging.INFO)
 
 class TorrentObjectTestCase(TestCase):
     tracker = None
@@ -23,7 +30,7 @@ class TorrentObjectTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.run_tracker()
+#        cls.run_tracker()
         cls.run_seeder()
 
     @classmethod
@@ -32,8 +39,8 @@ class TorrentObjectTestCase(TestCase):
         shutil.rmtree(settings.DOWNLOAD_DIR, True)
 
     def setUp(self):
-        self.configure_session()
         shutil.rmtree(settings.DOWNLOAD_DIR, True)
+        self.configure_session()
 
         try:
             os.makedirs(settings.DOWNLOAD_DIR)
@@ -90,15 +97,30 @@ class TorrentObjectTestCase(TestCase):
         self.assertEqual(list(files)[0].path, "movie/movie.mp4")
 
     def test_download_file(self):
-        return
         self.test_create_torrent()
-        filename = "movie/sintel.mp4"
+        print("created. Go further")
+        time.sleep(0.5)
+        filename = "movie/movie.mp4"
+#        print(self.obj.get_movies()[0].__dict__)
         self.obj.download_file(filename)
         while True:
             time.sleep(0.5)
-            print(self.obj.torrent_handler.file_progress())
-            self.obj._manage_pieces_priority()
-
+#            print(self.obj.get_movies()[0].cur_first_piece)
+#            print(self.obj.get_torrent_info().files()[0].size)
+#            print(self.__class__.h.status().state)
+#            print(self.__class__.h.status().progress)
+#            print(self.obj.get_status())
+#            print(self.obj.torrent_handler.status().state)
+            print(self.obj.torrent_handler.status().progress * 100)
+#            print(self.obj.torrent_handler.status().pieces[0])
+#            self.obj._manage_pieces_priority()
+#            print(h)
+#            h = self.__class__.h
+#            info= self.__class__.info
+#            print(info.files()[0])
+#            print(info.files()[0].path)
+#            print(h.is_seed())
+#            h.resume()
 
     def configure_session(self):
         ses = lt.session()
@@ -129,10 +151,15 @@ class TorrentObjectTestCase(TestCase):
         ses.start_natpmp()
 
         info = lt.torrent_info(TORRENT_PATH)
+
         h = ses.add_torrent({
             'ti': info,
             'save_path': settings.TEST_DIR
         })
+        h.super_seeding(True)
+
+        cls.h =h
+        cls.info =info
         cls.seeder = ses
 
     @classmethod

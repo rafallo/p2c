@@ -90,11 +90,9 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         # Decode the request
         package = decode_request(s.path)
-
         if not package:
             s.send_error(403)
             return
-
         # Get the necessary info out of the request
         info_hash = package["info_hash"][0]
         compact = bool(package["compact"][0])
@@ -128,7 +126,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 class Tracker():
     def __init__(self, host="", port=9010, interval=5,\
-                 torrent_db="tracker.db", log="tracker.log",\
+                 torrent_db="tracker.db", \
                  inmemory=True):
         """ Read in the initial values, load the database. """
 
@@ -144,9 +142,6 @@ class Tracker():
         self.running = False    # We're not running to begin with
 
         self.server_class.interval = interval
-
-        # Set logging info
-        basicConfig(filename=log, level=INFO)
 
         # If not in memory, give the database a file, otherwise it
         # will stay in memory

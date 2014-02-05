@@ -115,8 +115,6 @@ class TorrentObject(object):
         if not self._priority_thread_stop or not self._priority_thread_stop.is_set():
             self._run_torrent_threads()
 
-
-
     def has_torrent_info(self):
         """
         Checks if torrent has downloaded metadata
@@ -197,7 +195,6 @@ class TorrentObject(object):
         p_downloaded = self.torrent_handler.status().pieces
         movie = self.get_downloading_movie()
         first_piece, last_piece = movie.cur_first_piece, movie.cur_last_piece
-
         if not False in p_downloaded[first_piece:first_piece + self._jump + 1]:
             # all block downloaded
             first_piece += self._jump
@@ -207,25 +204,25 @@ class TorrentObject(object):
         if first_piece + self._jump + self._jump <= last_piece:
             for piece in range(first_piece + 4 * self._jump,
                 last_piece + 1):
-                # logger.debug("the lowest priority for: {}".format(piece))
+#                logger.debug("the lowest priority for: {}".format(piece))
                 self.torrent_handler.piece_priority(piece, 0)
-            if first_piece + self._jump <= last_piece:
-                for piece in range(first_piece + 2 * self._jump,
-                    min(last_piece + 1, first_piece + 4 * self._jump)):
-                    # logger.debug("low priority for: {}".format(piece))
-                    self.torrent_handler.piece_priority(piece, 2)
-                if first_piece <= last_piece:
-                    for piece in range(first_piece,
-                        min(last_piece + 1, first_piece + 2 * self._jump)):
-#                            logger.debug("the highest priority for: {}".format(piece))
-                        self.torrent_handler.piece_priority(piece, 7)
-                        # for mp4 get 512KB end of file
-                        # TODO: bug below
-                    #            for piece in range(
-                    #                last_piece - int(self.piece_length / 512 * 1024) + 1,
-                    #                last_piece):
-                    #                logger.debug("the highest priority for (512KB end of file): {}".format(piece))
-                    #                self.torrent_handler.piece_priority(piece, 7)
+        if first_piece + self._jump <= last_piece:
+            for piece in range(first_piece + 2 * self._jump,
+                min(last_piece + 1, first_piece + 4 * self._jump)):
+#                logger.debug("low priority for: {}".format(piece))
+                self.torrent_handler.piece_priority(piece, 2)
+        if first_piece <= last_piece:
+            for piece in range(first_piece,
+                min(last_piece + 1, first_piece + 2 * self._jump)):
+#                logger.debug("the highest priority for: {}".format(piece))
+                self.torrent_handler.piece_priority(piece, 7)
+                # for mp4 get 512KB end of file
+                # TODO: bug below
+            #            for piece in range(
+            #                last_piece - int(self.piece_length / 512 * 1024) + 1,
+            #                last_piece):
+            #                logger.debug("the highest priority for (512KB end of file): {}".format(piece))
+            #                self.torrent_handler.piece_priority(piece, 7)
         self._update_movies_progress()
         #if not self._priority_thread_stop.is_set():
         self._run_torrent_threads()

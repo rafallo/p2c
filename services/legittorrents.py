@@ -9,6 +9,7 @@ _ = lambda x: x
 
 
 class LegitTorrentsService(BaseService):
+    name = "Legit Torrents"
     category_url = "http://www.legittorrents.info/index.php?page=torrents&order=5&by=2&category={category_id}&active=1&pages={page}"
     search_url = "http://www.legittorrents.info/index.php?page=torrents&order=5&by=2&category={category_id}&active=1&pages={page}"
     page_size = 18

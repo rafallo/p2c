@@ -16,7 +16,6 @@ class Movie(object):
         self.cur_last_piece = last_piece
         self.piece_length = piece_length
         self.download_dir = download_dir
-        self.started = False
         self.downloaded_pieces = 0
 
     def __str__(self):

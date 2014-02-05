@@ -14,6 +14,7 @@ _ = lambda x: x
 
 
 class BaseService(AbstractService):
+    name = None
     category_url = None
     search_url = None
     page_size = None
@@ -68,8 +69,8 @@ class BaseService(AbstractService):
             if not key in self.running_threads:
                 thread = Thread(target=self._thread_retrieve_torrents,
                     args=(category_id, page))
-                self.running_threads[key] = thread
                 thread.start()
+                self.running_threads[key] = thread
 
         if wait and key in self.running_threads:
             self.running_threads.pop(key).join()

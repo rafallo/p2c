@@ -9,6 +9,7 @@ _ = lambda x: x
 
 
 class TPBService(BaseService):
+    name = "The Pirate Bay"
     category_url = "http://thepiratebay.se/browse/{category_id}/{page}/7"
     search_url = "http://thepiratebay.se/search/{phrase}/{page}/7/" + str(200)
     page_size = 30

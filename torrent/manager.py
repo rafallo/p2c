@@ -10,7 +10,6 @@ from p2c import settings
 from torrent.torrent import TorrentObject
 from p2c.ui import Torrent
 from torrent.movie import Movie
-from torrent.utils import get_torrent_uniqueness
 
 logger = logging.getLogger("p2c")
 
@@ -60,7 +59,7 @@ class FileManager(object):
                 source_path, torrent.label, session)
 
     def prioritize_torrents(self, playing: Movie):
-        for torrent in self.torrents:
+        for torrent in self.torrents.values():
             if playing.path in torrent.get_movies_filelist():
                 # mark to download
                 logger.info("downloading {}".format(torrent.name))

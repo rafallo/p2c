@@ -69,7 +69,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     data['movie progress'] = "{0:.2f}%".format(movie.progress * 100)
                     data['can_play'] = movie.can_play()
                 data.update(torrent.get_status())
-                data['progress'] = "{0:.2f}%".format(data['progress'] * 100)
+                # TODO: buggy due to setting priority to 0
+                if data['state'] == 'downloading':
+                    del data['progress']
+                else:
+                    data['progress'] = "{0:.2f}%".format(data['progress'] * 100)
                 data['download_rate'] = "{0:.2f} kb/s".format(data['download_rate']/1000)
             else:
                 data['status'] = "Getting metadata"

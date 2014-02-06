@@ -7,7 +7,7 @@ from p2c.exceptions import TorrentHasNotMetadataYet
 from pbt.tracker import Tracker
 import os
 from p2c import settings
-from torrent.torrent import TorrentObject
+from torrent.torrent import Torrent
 import libtorrent as lt
 
 settings.DOWNLOAD_DIR = os.path.join(settings.DOWNLOAD_DIR, "tests")
@@ -52,21 +52,21 @@ class TorrentObjectTestCase(TestCase):
 
     def test_create_torrent(self):
         torrent_content =TORRENT_PATH
-        self.obj = TorrentObject(
+        self.obj = Torrent(
             source_type="TORRENT",
             source=torrent_content,
             name="test movie")
         self.obj.bind_session(self.session)
-        self.assertIsInstance(self.obj, TorrentObject)
+        self.assertIsInstance(self.obj, Torrent)
         self.assertIsInstance(self.obj.get_torrent_info(), lt.torrent_info)
 
     def test_create_magnet_torrent(self):
-        self.obj = TorrentObject(
+        self.obj = Torrent(
             source_type="MAGNET",
             source=MAGNET,
             name="test movie")
         self.obj.bind_session(self.session)
-        self.assertIsInstance(self.obj, TorrentObject)
+        self.assertIsInstance(self.obj, Torrent)
 
         # we need to wait to download metadata
         self.assertRaises(TorrentHasNotMetadataYet, self.obj.get_torrent_info)

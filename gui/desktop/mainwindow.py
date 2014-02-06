@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QMainWindow, QTreeWidgetItem, QListWidgetItem, QLabe
 from PyQt5.QtCore import QUrl
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent, QMediaResource
 
-from p2c.app import Application
+from p2c.app import P2CDaemon
 from gui.desktop.ui_mainwindow import Ui_MainWindow
 from torrent.movie import Movie
 
@@ -39,7 +39,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.media_player.play()
         self.playButton.setEnabled(True)
 
-    def connect_app(self, app: Application):
+    def connect_app(self, app: P2CDaemon):
         self.app = app
         self._set_categories()
         self._connect_signals()

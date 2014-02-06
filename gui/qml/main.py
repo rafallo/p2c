@@ -1,21 +1,16 @@
 # -*- coding: utf-8 -*-
 import sys
 
-import time
-from gui.qml.classes import Tile
-from p2c.app import Application
-from gui.qml.binding import QMLBinding
+from p2c.app import P2CDaemon
+from gui.qml.app import P2CQMLApplication
 
 
 def main():
     # Create the application instance.
-    app = QMLBinding(sys.argv)
+    app = P2CQMLApplication(sys.argv)
     app.run_view()
-
-
-
-    logic = Application()
-    app.connect_app(logic)
+    logic = P2CDaemon()
+    app.connect_daemon(logic)
     sys.exit(app.exec_())
 
 

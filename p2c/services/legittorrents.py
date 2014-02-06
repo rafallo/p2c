@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from urllib import request
 from bs4 import BeautifulSoup
-import re
-from.base import  BaseService
-from p2c.ui import Category
+from .base import  BaseService
+from p2c.ui import CategoryInfo
 
 _ = lambda x: x
 
@@ -19,7 +18,7 @@ class LegitTorrentsService(BaseService):
 
     def get_categories(self) -> list:
         return [
-            Category(slug='movies',
+            CategoryInfo(slug='movies',
                 label=_("Movies"),
                 service=self,
                 kwargs={'id': 1})]

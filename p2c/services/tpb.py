@@ -2,8 +2,8 @@
 from urllib import request
 from bs4 import BeautifulSoup
 import re
-from.base import BaseService
-from p2c.ui import Category
+from .base import BaseService
+from p2c.ui import CategoryInfo
 
 _ = lambda x: x
 
@@ -17,43 +17,43 @@ class TPBService(BaseService):
 
     def get_categories(self) -> list:
         return [
-            Category(slug='movies',
+            CategoryInfo(slug='movies',
                 label=_("Movies"),
                 service=self,
                 kwargs={'id': 201}),
-            Category(slug='movies_dvdr',
+            CategoryInfo(slug='movies_dvdr',
                 label=_("Movies DVDR"),
                 service=self,
                 kwargs={'id': 202}),
-            Category(slug='music_videos',
+            CategoryInfo(slug='music_videos',
                 label=_("Music videos"),
                 service=self,
                 kwargs={'id': 203}),
-            Category(slug='movie_clips',
+            CategoryInfo(slug='movie_clips',
                 label=_("Movie clips"),
                 service=self,
                 kwargs={'id': 204}),
-            Category(slug='tv_shows',
+            CategoryInfo(slug='tv_shows',
                 label=_("TV shows"),
                 service=self,
                 kwargs={'id': 205}),
-            Category(slug='handheld',
+            CategoryInfo(slug='handheld',
                 label=_("Handheld"),
                 service=self,
                 kwargs={'id': 206}),
-            Category(slug='hd_movies',
+            CategoryInfo(slug='hd_movies',
                 label=_("HD - Movies"),
                 service=self,
                 kwargs={'id': 207}),
-            Category(slug='hd_tv_shows',
+            CategoryInfo(slug='hd_tv_shows',
                 label=_("HD - TV shows"),
                 service=self,
                 kwargs={'id': 208}),
-            Category(slug='3d',
+            CategoryInfo(slug='3d',
                 label=_("3D"),
                 service=self,
                 kwargs={'id': 209}),
-            Category(slug='other',
+            CategoryInfo(slug='other',
                 label=_("Other"),
                 service=self,
                 kwargs={'id': 299}),

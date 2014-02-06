@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 from abc import abstractmethod
 from threading import Thread, Lock
-from collections import defaultdict
-from urllib import request
-from bs4 import BeautifulSoup
-import re
-import time
-from.abstractbase import AbstractService
-from p2c.ui import Category, Torrent
+from .abstractbase import AbstractService
+from p2c.ui import CategoryInfo, TorrentInfo
 from p2c.utils import slugify
 
 _ = lambda x: x
@@ -31,7 +26,7 @@ class BaseService(AbstractService):
     def get_categories(self) -> list:
         pass
     
-    def get_torrents_list(self, category : Category=None, skip: int=0,
+    def get_torrents_list(self, category : CategoryInfo=None, skip: int=0,
                           limit=None) -> list:
         if limit is None:
             limit = self.page_size
@@ -91,7 +86,7 @@ class BaseService(AbstractService):
             kwargs = {'magnet': magnet,
                       'torrent_file': torrent_file
             }
-            torrent = Torrent(slug=slugify(name),
+            torrent = TorrentInfo(slug=slugify(name),
                 label=name,
                 seeders=seeders,
                 leechers=leechers,

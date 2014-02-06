@@ -13,7 +13,7 @@ SOURCE_TYPES = ("MAGNET", "TORRENT")
 
 logger = logging.getLogger("p2c")
 
-class TorrentObject(object):
+class Torrent(object):
     def __init__(self, source_type, source, name):
         """
         :type source: str magnet or torrent file path

@@ -4,16 +4,16 @@ import logging
 import threading
 from p2c import settings
 from p2c.exceptions import SessionNotBindedException
-from services.legittorrents import LegitTorrentsService
-from services.tpb import TPBService
+from p2c.services.legittorrents import LegitTorrentsService
+from p2c.services.tpb import TPBService
 from torrent.manager import FileManager
-from p2c.ui import Torrent
+from p2c.ui import TorrentInfo
 import libtorrent as lt
 from torrent.movie import Movie
 
 logger = logging.getLogger("p2c")
 
-class Application(object):
+class P2CDaemon(object):
     def __init__(self):
         self.manager = FileManager()
         self.services = [LegitTorrentsService(), TPBService()]
@@ -35,6 +35,9 @@ class Application(object):
     def buffer(self, movie:Movie):
         self.manager.prioritize_torrents(movie)
 
+    def is_playing(self, movie:Movie):
+        return self._playing == movie
+
     def play(self, movie:Movie):
         self._playing = movie
         self.manager.prioritize_torrents(movie)
@@ -44,7 +47,7 @@ class Application(object):
         [output.extend(service.get_categories()) for service in self.services]
         return output
 
-    def get_torrent(self, torrent: Torrent):
+    def get_torrent(self, torrent: TorrentInfo):
         return self.manager.get_torrent_handler(torrent, self.session)
 
     def _init_session(self):

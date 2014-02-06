@@ -7,8 +7,8 @@ import logging
 from urllib.parse import urlparse
 import urllib.request
 from p2c import settings
-from torrent.torrent import TorrentObject
-from p2c.ui import Torrent
+from torrent.torrent import Torrent
+from p2c.ui import TorrentInfo
 from torrent.movie import Movie
 
 logger = logging.getLogger("p2c")
@@ -17,7 +17,7 @@ class FileManager(object):
     def __init__(self):
         self.torrents = {}
 
-    def get_torrent_handler(self, torrent: Torrent, session):
+    def get_torrent_handler(self, torrent: TorrentInfo, session):
         # TODO: refactor this horrible method
         magnet = torrent.get_magnet()
         t_file = torrent.get_torrent_file()
@@ -72,7 +72,7 @@ class FileManager(object):
                                 session):
         id = self._get_torrent_uniqueness(
             source_path if source_type == "TORRENT" else source)
-        t_obj = TorrentObject(source_type, source, label)
+        t_obj = Torrent(source_type, source, label)
         # TODO: make it asynchronous
         t_obj.bind_session(session)
         self.torrents[id]=t_obj

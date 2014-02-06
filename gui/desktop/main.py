@@ -3,7 +3,7 @@
 import sys
 import logging
 from PyQt5.QtWidgets import QApplication
-from p2c.app import Application
+from p2c.app import P2CDaemon
 from gui.desktop.mainwindow import MainWindow
 
 
@@ -13,7 +13,7 @@ def main():
     app = QApplication(sys.argv)
     ui = MainWindow()
     ui.setupUi(ui)
-    logic = Application()
+    logic = P2CDaemon()
     ui.connect_app(logic)
 #    ui.play()
     sys.exit(app.exec_())

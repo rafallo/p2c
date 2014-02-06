@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
 from p2c.services.tpb import TPBService
-from p2c.ui import Torrent
+from p2c.ui import TorrentInfo
 
 class TPBServiceTestCase(TestCase):
     def setUp(self):
@@ -16,4 +16,4 @@ class TPBServiceTestCase(TestCase):
         torrents = self.service.get_torrents_list(first_category)
         self.assertIsInstance(torrents, list)
         for torrent in torrents:
-            self.assertIsInstance(torrent, Torrent)
+            self.assertIsInstance(torrent, TorrentInfo)

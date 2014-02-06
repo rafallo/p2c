@@ -3,7 +3,7 @@ from PyQt5 import QtCore
 
 class Tile(QtCore.QObject):
     nameChanged = QtCore.pyqtSignal()
-    coverChanged = QtCore.pyqtSignal()
+    posterChanged = QtCore.pyqtSignal()
     sourcehanged = QtCore.pyqtSignal()
 
     @QtCore.pyqtProperty(str, notify=nameChanged)
@@ -16,15 +16,15 @@ class Tile(QtCore.QObject):
             self._name = name
             self.nameChanged.emit()
 
-#    @QtCore.pyqtProperty(str, notify=coverChanged)
-#    def cover(self):
-#        return self._cover
-#
-#    @cover.setter
-#    def cover(self, cover):
-#        if self._cover != cover:
-#            self._cover = cover
-#            self.coverChanged.emit()
+    @QtCore.pyqtProperty(str, notify=posterChanged)
+    def poster(self):
+        return self._poster
+
+    @poster.setter
+    def poster(self, poster):
+        if self._poster != poster:
+            self._poster = poster
+            self.posterChanged.emit()
 
     @QtCore.pyqtProperty(str, notify=sourcehanged)
     def source(self):
@@ -36,10 +36,10 @@ class Tile(QtCore.QObject):
             self._source = source
             self.sourceChanged.emit()
 
-    def __init__(self, name='', source='', parent=None):
+    def __init__(self, name='', source='', poster=None, parent=None):
         super(Tile, self).__init__(parent)
 
         self._name = name
-        #        self._cover = cover
+        self._poster = poster
         self._source = source
 

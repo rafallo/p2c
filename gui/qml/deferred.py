@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from threading import Thread
 from PyQt5 import QtCore
 from PyQt5.QtCore import QThread
 
@@ -10,13 +11,25 @@ class SetMoviesThread(QThread):
         self.category = category
         self.ctx = ctx
 
+        self.threads = []
+
 
     def run(self):
-        if self.category:
-            items = map(lambda x: x.label,
-                self.category.get_torrents(limit=20))
-            self.data = []
+        items = self.category.get_torrents(limit=20)
+        self.data = []
 
-            for movie in items:
-                self.data.append((movie, self.category.service.name))
-            self.got_movies.emit(self.data)
+        for movie in items:
+            data = {}
+            th = Thread(target=self._get_additional_info, args=[movie, data])
+            self.threads.append((th, data))
+            th.start()
+
+        for th, data in self.threads:
+            th.join()
+            self.data.append((data['verbose_title'], self.category.service.name, data['poster']))
+        self.got_movies.emit(self.data)
+
+    def _get_additional_info(self, movie, data):
+        data['poster'] = movie.get_poster()
+        data['verbose_title'] = movie.get_verbose_title()
+

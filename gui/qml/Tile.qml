@@ -1,23 +1,39 @@
 import QtQuick 2.1
 
+
 Item {
-    width: 98
-    height: 98
+    width: 112
+    height: 112
     property alias titleText: title.text
     property alias subtitleText: subtitle.text
-    property alias background: back.color
+    property alias backgroundImage: cover.source
 
     objectName: "tile"
 
     signal tileClicked()
 
+    function randomBackground (name)
+    {
+        var qml= new Array ("#1abc9c", "#2ecc71", "#3498db",
+                            "#9b59b6","#34495e","#f1c40f","#e67e22","#e74c3c","#95a5a6"
+                            )
+        var currentIndex = name.length % qml.length;
+        var bg = qml[currentIndex]
+        latestIndex = currentIndex
+        return bg
+    }
 
+    Image {
+        id: cover
+        anchors.fill: parent
+    }
     Rectangle {
         id: back
         anchors.fill: parent
-        border.width: 0
-        objectName: "backCase"
+        color: backgroundImage != ''? Qt.rgba(0,0,0,0.7): randomBackground(titleText + subtitleText)
+        opacity: backgroundImage != '' ? 0.7:1
     }
+
     Text {
         id: title
         y: 5
@@ -46,21 +62,19 @@ Item {
         id: mousearea
         anchors.fill: parent
         hoverEnabled: true
-
+        property int circles: 0
         onClicked: {
-            rot.angle = 360
-
+            circles += 1
+            rot.angle = circles * 360
         }
         Component.onCompleted: {
             mousearea.clicked.connect(tileClicked)
         }
         onHoveredChanged: {
-            rot.angle = -20
-
+            rot.angle = (circles * 360) + 20
         }
-
         onExited: {
-            rot.angle = 0
+            rot.angle = (circles * 360)
         }
     }
     transform: Rotation {

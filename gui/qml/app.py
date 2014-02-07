@@ -15,6 +15,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         self._current_category = None
         self._current_torrent = None
         self._status_timer = QTimer(self)
+        self._movies_thread = None
 
     def run_view(self):
         self._view = QtQuick.QQuickView()
@@ -25,7 +26,9 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         self.categories = []
         self.movies = []
         self._rctx.setContextProperty("categoriesModel", self.categories)
+        self.movies = []
         self._rctx.setContextProperty("moviesModel", self.movies)
+
 
         self._view.setSource(QtCore.QUrl('qml.qml'))
 #        self.view.showFullScreen()
@@ -91,17 +94,16 @@ class P2CQMLApplication(QtGui.QGuiApplication):
 
     def on_category_clicked(self, index):
         # clear list
-        self._set_torrents([])
+        self._set_torrents([], self._current_category)
 
         category = self._daemon.get_categories()[index]
         self._current_category = category
 
         if self._current_category:
-            self.thread = SetMoviesThread(self._current_category, self._rctx)
-            self.thread.start()
-            self.thread.got_movies.connect(self._set_torrents)
-        else:
-            self._set_torrents([])
+            self._movies_thread = SetMoviesThread(self._current_category, self._rctx)
+            self._movies_thread.start()
+            self._movies_thread.got_movies.connect(self._set_torrents)
+
 
     def on_movie_clicked(self, index):
         self._view.rootObject().setProperty("isMovieScene", True)
@@ -130,10 +132,16 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         self._rctx.setContextProperty("categoriesModel", data)
         self.categories = data
 
-    def _set_torrents(self, data):
-        tiles = []
-        for movie, source, poster in data:
-            tiles.append(Tile(movie, source, poster))
-        self._rctx.setContextProperty("moviesModel", tiles)
-        self.movies = tiles
+    def _set_torrents(self, data, category):
+        if category == self._current_category:
+            # only existing tiles
+            for (tile, (movie,source,poster)) in zip(self.movies, data[:len(self.movies)]):
+                tile.name = movie
+                tile.source = source
+                tile.poster = poster
 
+            if len(data) != len(self.movies):
+                for movie, source, poster in data[len(self.movies):]:
+                    self.movies.append(Tile(movie, source, poster))
+
+                self._rctx.setContextProperty("moviesModel", self.movies)

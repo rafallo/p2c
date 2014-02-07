@@ -4,7 +4,7 @@ from PyQt5 import QtCore
 class Tile(QtCore.QObject):
     nameChanged = QtCore.pyqtSignal()
     posterChanged = QtCore.pyqtSignal()
-    sourcehanged = QtCore.pyqtSignal()
+    sourceChanged = QtCore.pyqtSignal()
 
     @QtCore.pyqtProperty(str, notify=nameChanged)
     def name(self):
@@ -26,7 +26,7 @@ class Tile(QtCore.QObject):
             self._poster = poster
             self.posterChanged.emit()
 
-    @QtCore.pyqtProperty(str, notify=sourcehanged)
+    @QtCore.pyqtProperty(str, notify=sourceChanged)
     def source(self):
         return self._source
 

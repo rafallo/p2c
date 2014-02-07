@@ -48,7 +48,6 @@ class BaseService(AbstractService):
         # retrieve limit +1 for smooth using
         for i in range(page_range, page_range + page_count):
             self._retrieve_torrents(category_id, i, wait=False)
-
         return self.torrents[category_id][skip:limit + skip]
 
     def _retrieve_torrents(self, category_id : int, page:int, wait:bool=True,

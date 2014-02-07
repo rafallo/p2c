@@ -4,6 +4,7 @@ import QtQuick 2.1
 Item {
     width: 112
     height: 112
+
     property alias titleText: title.text
     property alias subtitleText: subtitle.text
     property alias backgroundImage: cover.source
@@ -45,6 +46,7 @@ Item {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignTop
         clip: true
+        font.pixelSize: 12
     }
     Text {
         id: subtitle
@@ -57,6 +59,7 @@ Item {
         verticalAlignment: Text.AlignVCenter
         anchors.horizontalCenter: parent.horizontalCenter
         clip: true
+        font.pixelSize: 10
     }
     MouseArea {
         id: mousearea

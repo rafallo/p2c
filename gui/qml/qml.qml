@@ -4,7 +4,7 @@ import QtQuick.Controls 1.1
 
 
 Rectangle {
-    width: 1024
+    width: 935
     height: 600
     id: mainWindow
 
@@ -43,19 +43,29 @@ Rectangle {
     }
 
     // movies
-    ScrollView {
-        id: movies
-        width: mainWindow.width - 8
-        anchors.margins: 4
-        x: 4
+    ScrollView{
         anchors.bottom: mainWindow.bottom
         anchors.top: categories.bottom
-        Flow {
-            spacing: 4
-            width: mainWindow.width
-            Repeater {
-                model: moviesModel
+        width: mainWindow.width
+        GridView{
+            id: movies
+            clip:true
+            cellWidth: 116; cellHeight: 116
+            snapMode: GridView.SnapOneRow
+            onContentYChanged:  {
+//                console.log(contentY)
+//                console.log(height)
+            }
+
+            onAtYEndChanged: {
+//                console.log("1")
+            }
+
+            delegate: Item{
+                width: 116
+                height: 116
                 Tile {
+                    anchors.centerIn:parent
                     titleText: name
                     subtitleText: source
                     backgroundImage: poster
@@ -64,7 +74,8 @@ Rectangle {
                     }
                 }
             }
-        }
-    }
+
+            model: moviesModel
+        }}
     Player {}
 }

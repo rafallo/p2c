@@ -40,14 +40,13 @@ class TorrentInfo(object):
     def get_poster(self):
         if self._info is None:
             self._get_additional_info()
-        if 'poster_path' in self._info:
-            return client.base_url + self._info.get('poster_path', None)
-
+        if 'poster_path' in self._info and self._info['poster_path']:
+            return client.base_url + self._info['poster_path']
 
     def get_verbose_title(self):
         if self._info is None:
             self._get_additional_info()
-        return self._info.get('title', self.label)
+        return self._info.get('title', None)
 
     def _get_additional_info(self):
         self._info = {}

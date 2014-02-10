@@ -48,9 +48,20 @@ class TorrentInfo(object):
             self._get_additional_info()
         return self._info.get('title', None)
 
+    def get_description(self):
+        if self._info is None:
+            self._get_additional_info()
+        desc = ""
+        if 'release_date' in self._info:
+            desc += "Release date: {}\n".format(self._info['release_date'])
+        if 'vote_average' in self._info:
+            desc += "Vote average: {}\n".format(self._info['vote_average'])
+        return desc
+
     def _get_additional_info(self):
         self._info = {}
         self._info = client.match_title(self.label) or {}
+
 
 class CategoryInfo(object):
     def __init__(self, slug: str, label:str, service,

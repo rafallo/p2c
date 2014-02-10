@@ -5,6 +5,7 @@ class Tile(QtCore.QObject):
     nameChanged = QtCore.pyqtSignal()
     posterChanged = QtCore.pyqtSignal()
     sourceChanged = QtCore.pyqtSignal()
+    descriptionChanged = QtCore.pyqtSignal()
 
     @QtCore.pyqtProperty(str, notify=nameChanged)
     def name(self):
@@ -36,10 +37,21 @@ class Tile(QtCore.QObject):
             self._source = source
             self.sourceChanged.emit()
 
-    def __init__(self, name='', source='', poster=None, parent=None):
+    @QtCore.pyqtProperty(str, notify=descriptionChanged)
+    def description(self):
+        return self._description
+
+    @description.setter
+    def description(self, description):
+        if self._description != description:
+            self._description = description
+            self.descriptionChanged.emit()
+
+    def __init__(self, name='', source='', poster=None, description='',parent=None):
         super(Tile, self).__init__(parent)
 
         self._name = name
         self._poster = poster
         self._source = source
+        self._description = description
 

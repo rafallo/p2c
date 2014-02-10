@@ -46,7 +46,6 @@ class FileManager(object):
                     return torrent_obj
 
         if source_type == "TORRENT":
-            # TODO: make it asynchronous
             def retrieve_and_save(url, source_path, torrent, session):
                 source = urllib.request.urlretrieve(url, source_path)[0]
                 self._create_torrent_handler(source_type, source, source_path,

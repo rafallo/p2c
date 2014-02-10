@@ -69,6 +69,8 @@ class P2CQMLApplication(QtGui.QGuiApplication):
                         self.buffer(movie)
             else:
                 self.wait_for_metadata()
+        else:
+            self.wait_for_metadata()
 
         return
         if self.current_torrent:
@@ -115,6 +117,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
     def _connect_signals(self):
         self._view.rootObject().categoryClicked.connect(self.on_category_clicked)
         self._view.rootObject().movieClicked.connect(self.on_movie_clicked)
+        self._view.rootObject().movieClicked.connect(self.on_movie_clicked)
         self._status_timer.timeout.connect(self.update_status)
         self._status_timer.start(500)
 
@@ -135,13 +138,14 @@ class P2CQMLApplication(QtGui.QGuiApplication):
     def _set_torrents(self, data, category):
         if category == self._current_category:
             # only existing tiles
-            for (tile, (movie,source,poster)) in zip(self.movies, data[:len(self.movies)]):
+            for (tile, (movie,source,poster, description)) in zip(self.movies, data[:len(self.movies)]):
                 tile.name = movie
                 tile.source = source
                 tile.poster = poster
+                tile.description = description
 
             if len(data) != len(self.movies):
-                for movie, source, poster in data[len(self.movies):]:
-                    self.movies.append(Tile(movie, source, poster))
+                for movie, source, poster, description in data[len(self.movies):]:
+                    self.movies.append(Tile(movie, source, poster, description))
 
                 self._rctx.setContextProperty("moviesModel", self.movies)

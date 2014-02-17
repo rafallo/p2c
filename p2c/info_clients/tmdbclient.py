@@ -4,7 +4,7 @@ import logging
 import requests
 from p2c import secret
 
-logger = logging.getLogger("p2c")
+logger = logging.getLogger(__name__)
 
 class TMDBApiClient(object):
     URL = "http://api.themoviedb.org/3/"
@@ -20,9 +20,13 @@ class TMDBApiClient(object):
         url = self.URL + "search/movie"
         params = self.params.copy()
         params.update({"query": title})
-        text = requests.get(url, params=params).text
-        data = json.loads(text)
-        return data['results']
+        response = requests.get(url, params=params)
+        if response.status_code == 200:
+            data = json.loads(response.text)
+            return data['results']
+        else:
+            logger.info("TMBD responsed with %s" % response.status_code)
+            return []
 
     def match_title(self, title):
         candidates = self.search_for_movies(title)

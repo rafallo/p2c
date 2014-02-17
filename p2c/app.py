@@ -11,12 +11,13 @@ from p2c.ui import TorrentInfo
 import libtorrent as lt
 from torrent.movie import Movie
 
-logger = logging.getLogger("p2c")
+logger = logging.getLogger(__name__)
 
 class P2CDaemon(object):
     def __init__(self):
         self.manager = FileManager()
         self.services = [LegitTorrentsService(), TPBService()]
+#        self.services = [TPBService()]
         self._init_session()
 
         threading.Thread(target=self._prefill_cache).start()
@@ -47,8 +48,15 @@ class P2CDaemon(object):
         [output.extend(service.get_categories()) for service in self.services]
         return output
 
+    def search(self, query) -> list:
+        output = []
+        [output.extend(service.search(query)) for service in self.services]
+        return output
+
     def get_torrent(self, torrent: TorrentInfo):
-        return self.manager.get_torrent_handler(torrent, self.session)
+        return self.manager.get_torrent_handler(
+            torrent.label, self.session, torrent.get_magnet(),
+                    torrent.get_torrent_file())
 
     def _init_session(self):
         dht_state = self._get_storage_value("dht_state")

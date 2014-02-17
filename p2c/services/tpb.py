@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
+import logging
 from urllib import request
 from bs4 import BeautifulSoup
 import re
-from .base import BaseService
+from.base import BaseService
 from p2c.ui import CategoryInfo
 
 _ = lambda x: x
+
+logger = logging.getLogger(__name__)
 
 
 class TPBService(BaseService):
     name = "The Pirate Bay"
     category_url = "http://thepiratebay.se/browse/{category_id}/{page}/7"
-    search_url = "http://thepiratebay.se/search/{phrase}/{page}/7/" + str(200)
+    search_url = "http://thepiratebay.se/search/{phrase}/{page}/7/{category_id}"
     page_size = 30
     video_category_id = 200
 
@@ -59,16 +62,35 @@ class TPBService(BaseService):
                 kwargs={'id': 299}),
             ]
 
-    def _get_html_containers(self, category_id, page):
+    def _get_html_containers(self, category_id, page, query):
         # for BS parsing. Returns html container with torrent data
-        site = request.urlopen(self.category_url.format(
-            category_id=category_id,
-            page=page
-        ))
+        if query:
+            if category_id:
+                url = self.search_url.format(
+                    category_id=category_id,
+                    page=page,
+                    phrase=query
+                )
+            else:
+                url = self.search_url.format(
+                    category_id=200,
+                    page=page,
+                    phrase=query
+                )
+        else:
+            url = self.category_url.format(
+                category_id=category_id,
+                page=page
+            )
+        site = request.urlopen(url)
         soup = BeautifulSoup(site.read())
-        for container in soup.find(id="searchResult").children:
-            if self._is_valid_html_container(container):
-                yield container
+        open("bt.html", "w").write(str(soup))
+        if(soup.find(id="searchResult")):
+            for container in soup.find(id="searchResult").children:
+                if self._is_valid_html_container(container):
+                    yield container
+        else:
+            logger.debug("No #searchResult in html file")
 
     def _is_valid_html_container(self, container):
         # for BS parsing. Checks if html containr is valid

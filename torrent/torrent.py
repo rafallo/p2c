@@ -11,7 +11,7 @@ from torrent.movie import Movie
 
 SOURCE_TYPES = ("MAGNET", "TORRENT")
 
-logger = logging.getLogger("p2c")
+logger = logging.getLogger(__name__)
 
 class Torrent(object):
     def __init__(self, source_type, source, name):
@@ -57,6 +57,11 @@ class Torrent(object):
     def __str__(self):
         return self.name
 
+    def set_source(self, source, session):
+        self.source = source
+        if self.source:
+            self.bind_session(session)
+
     def bind_session(self, session):
         """
         Creates torrent handler based on source_type
@@ -93,6 +98,7 @@ class Torrent(object):
         self.piece_length = info.piece_length()
         self.priority_interval = settings.PRIORITY_INTERVAL * self.piece_length / (
             1024 ** 2)
+
         self._jump = int(settings.DOWNLOAD_PIECE_SIZE / self.piece_length) + 1
 
         self.files = {}
@@ -102,18 +108,17 @@ class Torrent(object):
                 first_piece = int(file.offset / self.piece_length)
                 last_piece = int((file.size + file.offset) / self.piece_length)
                 self.files[file.path] = Movie(path=file.path,
-                        size=file.size, first_piece=first_piece, last_piece=last_piece,
-                        piece_length=self.piece_length,
-                        download_dir=self._get_download_dir())
+                    size=file.size, first_piece=first_piece,
+                    last_piece=last_piece,
+                    piece_length=self.piece_length,
+                    download_dir=self._get_download_dir())
 
     def download_file(self, filename:str):
         if not filename in self.get_movies_filelist():
             raise Exception("filename not found in torrent")
         self._prioritize_to_none()
         self._downloading = self.files[filename]
-
-        if not self._priority_thread_stop or not self._priority_thread_stop.is_set():
-            self._run_torrent_threads()
+        self._run_torrent_threads()
 
     def has_torrent_info(self):
         """
@@ -122,7 +127,7 @@ class Torrent(object):
         try:
             self.get_torrent_info()
             return True
-        except TorrentHasNotMetadataYet:
+        except (TorrentHasNotMetadataYet, SessionNotBindedException):
             return False
 
     def get_torrent_info(self, wait=False):
@@ -133,7 +138,11 @@ class Torrent(object):
             return self._torrent_info
 
         if self.torrent_handler is None:
-            raise SessionNotBindedException
+            if wait:
+                while not self.torrent_handler is None:
+                    time.sleep(0.1)
+            else:
+                raise SessionNotBindedException
 
         if not self.torrent_handler.has_metadata():
             if wait:
@@ -176,15 +185,15 @@ class Torrent(object):
         p_downloaded = self.torrent_handler.status().pieces
         movie = self.get_downloading_movie()
         first_piece, last_piece = movie.first_piece, movie.last_piece
-#            logger.debug("first_piece: {}".format(first_piece))
-#            logger.debug("last_piece: {}".format(last_piece ))
+        #            logger.debug("first_piece: {}".format(first_piece))
+        #            logger.debug("last_piece: {}".format(last_piece ))
         counter = 0
         for item in p_downloaded[first_piece:last_piece]:
             if item == True:
                 counter += 1
             else:
                 break
-#        logger.debug("download_pieces inside thread is: {}".format(counter))
+            #        logger.debug("download_pieces inside thread is: {}".format(counter))
         movie.downloaded_pieces = counter
 
     def _manage_pieces_priority(self):
@@ -199,39 +208,46 @@ class Torrent(object):
             # all block downloaded
             first_piece += self._jump
             movie.cur_first_piece = first_piece
-        # prioritezing
+            # prioritezing
         # [7, 7, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ...]
         if first_piece + self._jump + self._jump <= last_piece:
             for piece in range(first_piece + 4 * self._jump,
                 last_piece + 1):
-#                logger.debug("the lowest priority for: {}".format(piece))
+            #                logger.debug("the lowest priority for: {}".format(piece))
                 self.torrent_handler.piece_priority(piece, 0)
         if first_piece + self._jump <= last_piece:
             for piece in range(first_piece + 2 * self._jump,
                 min(last_piece + 1, first_piece + 4 * self._jump)):
-#                logger.debug("low priority for: {}".format(piece))
+            #                logger.debug("low priority for: {}".format(piece))
                 self.torrent_handler.piece_priority(piece, 2)
         if first_piece <= last_piece:
             for piece in range(first_piece,
                 min(last_piece + 1, first_piece + 2 * self._jump)):
-#                logger.debug("the highest priority for: {}".format(piece))
+            #                logger.debug("the highest priority for: {}".format(piece))
                 self.torrent_handler.piece_priority(piece, 7)
                 # for mp4 get 512KB end of file
                 # TODO: bug below
-            #            for piece in range(
-            #                last_piece - int(self.piece_length / 512 * 1024) + 1,
-            #                last_piece):
-            #                logger.debug("the highest priority for (512KB end of file): {}".format(piece))
-            #                self.torrent_handler.piece_priority(piece, 7)
+                #            for piece in range(
+                #                last_piece - int(self.piece_length / 512 * 1024) + 1,
+                #                last_piece):
+                #                logger.debug("the highest priority for (512KB end of file): {}".format(piece))
+                #                self.torrent_handler.piece_priority(piece, 7)
         self._update_movies_progress()
-        #if not self._priority_thread_stop.is_set():
-        self._run_torrent_threads()
-        #print(self.torrent_handler.piece_priorities()[key[0]:key[1]])
+        if not self._priority_thread_stop.is_set():
+            if self._priority_timer:
+                self._priority_timer.cancel()
+            self._priority_timer = None
+            self._run_torrent_threads()
 
     def _run_torrent_threads(self):
-#        logger.debug("run threads for {}".format(self.priority_interval))
-        self._priority_timer = Timer(self.priority_interval,
-            self._manage_pieces_priority).start()
+    #        logger.debug("run threads for {}".format(self.priority_interval))
+        if not self._priority_thread_stop.is_set():
+            if not self._priority_timer:
+                self._priority_timer = Timer(self.priority_interval,
+                    self._manage_pieces_priority)
+                self._priority_timer.start()
+
+
 
     def _stop_torrent_threads(self):
         self._priority_thread_stop.set()

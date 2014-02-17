@@ -14,7 +14,7 @@ from p2c.app import P2CDaemon
 from gui.desktop.ui_mainwindow import Ui_MainWindow
 from torrent.movie import Movie
 
-logger = logging.getLogger("p2c")
+logger = logging.getLogger(__name__)
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     settings = QSettings('Rafał Jagoda', 'Peer 2 cinema')

@@ -2,21 +2,21 @@
 from threading import Thread
 from PyQt5 import QtCore
 from PyQt5.QtCore import QThread
-from p2c.ui import CategoryInfo
 
-class SetMoviesThread(QThread):
-    got_movies = QtCore.pyqtSignal(list, CategoryInfo)
 
-    def __init__(self, category, ctx, QObject_parent=None):
-        super().__init__(QObject_parent)
-        self.category = category
-        self.ctx = ctx
+class AbstractMoviesThread(QThread):
+    got_movies = QtCore.pyqtSignal(list, QThread)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.threads = []
+
+    def get_torrents(self):
+        raise NotImplementedError
 
     def run(self):
         self.data = []
-        self.items = self.category.get_torrents(limit=32)
+        self.items = self.get_torrents()
         self._process_no_posters()
         self._process_with_posters()
 
@@ -28,7 +28,7 @@ class SetMoviesThread(QThread):
             self.threads.append((th, data))
             th.start()
             self.data.append((torrent_info.label, '', None, None))
-        self.got_movies.emit(self.data, self.category)
+        self.got_movies.emit(self.data, self)
 
     def _process_with_posters(self):
         updated_data = []
@@ -43,7 +43,7 @@ class SetMoviesThread(QThread):
                     (data['title'], '', data.get('poster', None),
                      data.get('description', None)))
         self.data[:] = updated_data
-        self.got_movies.emit(self.data, self.category)
+        self.got_movies.emit(self.data, self)
 
     def _get_additional_info(self, torrent_info, data):
         if torrent_info.get_poster():
@@ -53,3 +53,22 @@ class SetMoviesThread(QThread):
         if torrent_info.get_verbose_title():
             data['verbose_title'] = torrent_info.get_verbose_title()
         data['title'] = torrent_info.label
+
+
+class SetMoviesThread(AbstractMoviesThread):
+    def __init__(self, category, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.category = category
+
+    def get_torrents(self):
+        dd = self.category.get_torrents(limit=32)
+        return dd
+
+class SearchThread(AbstractMoviesThread):
+    def __init__(self, query, search_fun, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.query = query
+        self.search_fun = search_fun
+
+    def get_torrents(self):
+        return self.search_fun(self.query)

@@ -14,29 +14,62 @@ Rectangle {
 
     signal categoryClicked(int index)
     signal movieClicked(int index)
+    signal searchQuery(string query)
 
 
     // categories
-    ScrollView {
-        id: categories
-        width: mainWindow.width - 8
-        anchors.margins: 4
-        height: 132
-        x: 4
-        y: 4
-        Row {
-            spacing: 4
-            Repeater {
-                id: rep
-                model: categoriesModel
-                objectName: "categoriesContainer"
-                Tile {
-                    titleText: name
-                    subtitleText: source
-                    backgroundImage: poster
-                    resizableForMoreInfo: false
-                    onTileClicked: {
-                        categoryClicked(index)
+    Item {
+        id: menuBar
+        width: 132
+        height: mainWindow.height - 8
+        Text {
+            text: "Search"
+            color: 'gray'
+            anchors.top: parent.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.topMargin: 5
+            width: 120
+            height: 30
+            font.pixelSize: 16
+            horizontalAlignment: TextInput.AlignHCenter
+            visible: search.text.length == 0
+        }
+
+        TextInput {
+            id: search
+            anchors.top: parent.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.topMargin: 5
+            width: 120
+            height: 30
+            font.pixelSize: 16
+            horizontalAlignment: TextInput.AlignHCenter
+            onTextChanged: {
+                searchQuery(text)
+            }
+        }
+        ScrollView {
+            anchors.margins: 4
+            anchors.top: search.bottom
+            height: mainWindow.height - 8-40
+            width: 132
+            x: 4
+            y: 4
+
+            Column {
+                spacing: 4
+                Repeater {
+                    id: rep
+                    model: categoriesModel
+                    objectName: "categoriesContainer"
+                    Tile {
+                        titleText: name
+                        subtitleText: source
+                        backgroundImage: poster
+                        resizableForMoreInfo: false
+                        onTileClicked: {
+                            categoryClicked(index)
+                        }
                     }
                 }
             }
@@ -47,13 +80,17 @@ Rectangle {
 
     ScrollView {
         id: movies
-        width: mainWindow.width - 4
-        anchors.margins: 4
-        x: 4
-        anchors.bottom: mainWindow.bottom
-        anchors.top: categories.bottom
+        anchors {
+            bottom: mainWindow.bottom
+            right: mainWindow.right
+            top: mainWindow.top
+            left: menuBar.right
+            topMargin: 4
+            leftMargin: 4
+        }
+
         Flow {
-            width: mainWindow.width - 20
+            width: mainWindow.width - 160
             spacing: 4
             Repeater {
                 model: moviesModel

@@ -10,7 +10,7 @@ _ = lambda x: x
 class LegitTorrentsService(BaseService):
     name = "Legit Torrents"
     category_url = "http://www.legittorrents.info/index.php?page=torrents&order=5&by=2&category={category_id}&active=1&pages={page}"
-    search_url = "http://www.legittorrents.info/index.php?page=torrents&order=5&by=2&category={category_id}&active=1&pages={page}"
+    search_url = "http://www.legittorrents.info/index.php?page=torrents&order=5&by=2&category={category_id}&active=1&pages={page}&search={phrase}"
     page_size = 18
     video_category_id = 1
 
@@ -23,12 +23,27 @@ class LegitTorrentsService(BaseService):
                 service=self,
                 kwargs={'id': 1})]
 
-    def _get_html_containers(self, category_id, page):
+    def _get_html_containers(self, category_id, page, query):
         # for BS parsing. Returns html container with torrent data
-        site = request.urlopen(self.category_url.format(
-            category_id=category_id,
-            page=page
-        ))
+        if query:
+            if category_id:
+                url = self.search_url.format(
+                    category_id=category_id,
+                    page=page,
+                    phrase=query
+                )
+            else:
+                url = self.search_url.format(
+                    category_id=self.video_category_id,
+                    page=page,
+                    phrase=query
+                )
+        else:
+            url = self.category_url.format(
+                category_id=category_id,
+                page=page
+            )
+        site = request.urlopen(url)
         soup = BeautifulSoup(site.read())
 
         for container in soup.find_all("table", "lista")[3].find_all("tr")[1:]:

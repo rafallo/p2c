@@ -3,7 +3,7 @@ import json
 import logging
 import requests
 
-logger = logging.getLogger("p2c")
+logger = logging.getLogger(__name__)
 
 class OMDBApiClient(object):
     URL = "http://www.omdbapi.com/"

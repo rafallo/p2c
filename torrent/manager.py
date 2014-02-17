@@ -8,19 +8,17 @@ from urllib.parse import urlparse
 import urllib.request
 from p2c import settings
 from torrent.torrent import Torrent
-from p2c.ui import TorrentInfo
 from torrent.movie import Movie
 
-logger = logging.getLogger("p2c")
+logger = logging.getLogger(__name__)
 
 class FileManager(object):
     def __init__(self):
         self.torrents = {}
 
-    def get_torrent_handler(self, torrent: TorrentInfo, session):
-        # TODO: refactor this horrible method
-        magnet = torrent.get_magnet()
-        t_file = torrent.get_torrent_file()
+        #torrent: TorrentInfo
+    def get_torrent_handler(self, label, session, magnet=None, t_file=None):
+        assert(magnet or t_file)
         source_path = None
         url = None
         if t_file:
@@ -46,16 +44,18 @@ class FileManager(object):
                     return torrent_obj
 
         if source_type == "TORRENT":
-            def retrieve_and_save(url, source_path, torrent, session):
+            def retrieve_and_save(url, source_path, session, t_obj):
                 source = urllib.request.urlretrieve(url, source_path)[0]
-                self._create_torrent_handler(source_type, source, source_path,
-                    torrent.label, session)
+                t_obj.set_source(source, session)
 
+            t_obj = self._create_torrent_handler(source_type, None,
+                source_path, label, session)
             Thread(target=retrieve_and_save,
-                args=(url, source_path, torrent, session)).start()
+                args=(url, source_path, session, t_obj)).start()
+            return t_obj
         else:
             return self._create_torrent_handler(source_type, source,
-                source_path, torrent.label, session)
+                source_path, label, session)
 
     def prioritize_torrents(self, playing: Movie):
         for torrent in self.torrents.values():
@@ -73,7 +73,7 @@ class FileManager(object):
             source_path if source_type == "TORRENT" else source)
         t_obj = Torrent(source_type, source, label)
         # TODO: make it asynchronous
-        t_obj.bind_session(session)
+        t_obj.set_source(source, session)
         self.torrents[id]=t_obj
         return t_obj
 

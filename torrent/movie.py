@@ -4,7 +4,7 @@ import logging
 from p2c import settings
 from p2c.exceptions import NotDownloadingException
 
-logger = logging.getLogger("p2c")
+logger = logging.getLogger(__name__)
 
 class Movie(object):
     def __init__(self, path, size, first_piece, last_piece, piece_length, download_dir):

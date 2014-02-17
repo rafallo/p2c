@@ -2,11 +2,13 @@
 from PyQt5 import QtGui, QtCore, QtQuick
 from PyQt5.QtCore import QUrl, QTimer
 from gui.qml.classes import Tile
-from gui.qml.deferred import SetMoviesThread
+from gui.qml.deferred import SetMoviesThread, SearchThread
 from p2c.app import P2CDaemon
 from p2c.ui import TorrentInfo
 from torrent.movie import Movie
 from torrent.torrent import Torrent
+
+
 
 
 class P2CQMLApplication(QtGui.QGuiApplication):
@@ -16,6 +18,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         self._current_torrent = None
         self._status_timer = QTimer(self)
         self._movies_thread = None
+        self._search_thread = None
 
     def run_view(self):
         self._view = QtQuick.QQuickView()
@@ -96,15 +99,16 @@ class P2CQMLApplication(QtGui.QGuiApplication):
 
     def on_category_clicked(self, index):
         # clear list
-        self._set_torrents([], self._current_category)
+        self._set_torrents([])
 
         category = self._daemon.get_categories()[index]
         self._current_category = category
 
         if self._current_category:
-            self._movies_thread = SetMoviesThread(self._current_category, self._rctx)
+            self._search_thread = None
+            self._movies_thread = SetMoviesThread(self._current_category)
             self._movies_thread.start()
-            self._movies_thread.got_movies.connect(self._set_torrents)
+            self._movies_thread.got_movies.connect(self._threaded_set_torrents)
 
 
     def on_movie_clicked(self, index):
@@ -114,10 +118,21 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         self._current_torrent = self._daemon.get_torrent(torrent_ui)
         self.update_status()
 
+    def on_search(self, query):
+        # clear list
+        self._set_torrents([])
+
+        self._movies_thread = None
+        self._search_thread = SearchThread(query, self._daemon.search)
+        self._search_thread.start()
+        self._search_thread.got_movies.connect(self._threaded_set_torrents)
+
+
     def _connect_signals(self):
         self._view.rootObject().categoryClicked.connect(self.on_category_clicked)
         self._view.rootObject().movieClicked.connect(self.on_movie_clicked)
         self._view.rootObject().movieClicked.connect(self.on_movie_clicked)
+        self._view.rootObject().searchQuery.connect(self.on_search)
         self._status_timer.timeout.connect(self.update_status)
         self._status_timer.start(500)
 
@@ -135,17 +150,21 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         self._rctx.setContextProperty("categoriesModel", data)
         self.categories = data
 
-    def _set_torrents(self, data, category):
-        if category == self._current_category:
-            # only existing tiles
-            for (tile, (movie,source,poster, description)) in zip(self.movies, data[:len(self.movies)]):
-                tile.name = movie
-                tile.source = source
-                tile.poster = poster
-                tile.description = description
+    def _threaded_set_torrents(self, data, thread):
+        # if latest action
+        if thread == self._movies_thread or thread == self._search_thread:
+            self._set_torrents(data)
 
-            if len(data) != len(self.movies):
-                for movie, source, poster, description in data[len(self.movies):]:
-                    self.movies.append(Tile(movie, source, poster, description))
+    def _set_torrents(self, data):
+        # only existing tiles
+        for (tile, (movie,source,poster, description)) in zip(self.movies, data[:len(self.movies)]):
+            tile.name = movie
+            tile.source = source
+            tile.poster = poster
+            tile.description = description
 
-                self._rctx.setContextProperty("moviesModel", self.movies)
+        if len(data) != len(self.movies):
+            for movie, source, poster, description in data[len(self.movies):]:
+                self.movies.append(Tile(movie, source, poster, description))
+
+            self._rctx.setContextProperty("moviesModel", self.movies)

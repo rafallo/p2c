@@ -11,8 +11,9 @@ Rectangle {
     Behavior on color{ PropertyAnimation {} }
     anchors.fill: mainWindow.fill
     anchors.top: mainWindow.top
-    width: mainWindow.width
-    height: mainWindow.height
+    width: 800
+    height: 600
+
     Text {
         text: movieStatus
         anchors.centerIn: parent

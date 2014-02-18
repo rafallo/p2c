@@ -98,7 +98,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignLeft
             clip: true
-            font.pixelSize: 12
+            font { family: "Nokia Sans S60"; pixelSize: 12 }
         }
 
         Rectangle {
@@ -114,7 +114,7 @@ Item {
             Text{
                 text: "Play!"
                 anchors.horizontalCenter: parent.horizontalCenter
-                font.pixelSize: 16
+                font { family: "Nokia Sans S60"; pixelSize: 16 }
             }
 
             MouseArea {
@@ -136,7 +136,7 @@ Item {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignTop
         clip: true
-        font.pixelSize: 12
+        font { family: "Nokia Sans S60"; pixelSize: 12 }
     }
     Text {
         id: subtitle
@@ -149,7 +149,7 @@ Item {
         verticalAlignment: Text.AlignVCenter
         anchors.horizontalCenter: back.horizontalCenter
         clip: true
-        font.pixelSize: 10
+        font { family: "Nokia Sans S60"; pixelSize: 10 }
     }
 
     transform: Rotation {

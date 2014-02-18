@@ -84,7 +84,6 @@ class TPBService(BaseService):
             )
         site = request.urlopen(url)
         soup = BeautifulSoup(site.read())
-        open("bt.html", "w").write(str(soup))
         if(soup.find(id="searchResult")):
             for container in soup.find(id="searchResult").children:
                 if self._is_valid_html_container(container):

@@ -16,6 +16,10 @@ Rectangle {
     signal movieClicked(int index)
     signal searchQuery(string query)
 
+    onCategoryClicked: {
+        search.text = ''
+        search.focus = false
+    }
 
     // categories
     Item {
@@ -30,19 +34,19 @@ Rectangle {
             anchors.topMargin: 5
             width: 120
             height: 30
-            font.pixelSize: 16
             horizontalAlignment: TextInput.AlignHCenter
             visible: search.text.length == 0
+            font { family: "Nokia Sans S60"; pixelSize: 16 }
         }
 
         TextInput {
+            font { family: "Nokia Sans S60"; pixelSize: 16 }
             id: search
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.topMargin: 5
             width: 120
             height: 30
-            font.pixelSize: 16
             horizontalAlignment: TextInput.AlignHCenter
             onTextChanged: {
                 searchQuery(text)
@@ -109,5 +113,8 @@ Rectangle {
     }
 
 
-    Player {}
+    Player {
+        width: mainWindow.width
+        height: mainWindow.height
+    }
 }

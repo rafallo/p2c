@@ -16,6 +16,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         super().__init__(list_of_str)
         self._current_category = None
         self._current_torrent = None
+        self._current_torrent_info = None
         self._status_timer = QTimer(self)
         self._movies_thread = None
         self._search_thread = None
@@ -116,9 +117,12 @@ class P2CQMLApplication(QtGui.QGuiApplication):
 
         torrent_ui = self._current_category.get_torrents(limit=20)[index]
         self._current_torrent = self._daemon.get_torrent(torrent_ui)
+        self._current_torrent_info =torrent_ui
         self.update_status()
 
     def on_search(self, query):
+        if len(query) < 3:
+            return
         # clear list
         self._set_torrents([])
 
@@ -142,6 +146,11 @@ class P2CQMLApplication(QtGui.QGuiApplication):
     def _set_media(self, movie: Movie):
        file_name = movie.get_target_path()
        self._rctx.setContextProperty("movieSource", QUrl.fromLocalFile(file_name))
+       self._set_additional_media_info()
+
+    def _set_additional_media_info(self):
+       self._rctx.setContextProperty("title", self._current_torrent_info.get_verbose_title())
+       self._rctx.setContextProperty("poster", self._current_torrent_info.get_poster())
 
     def _set_categories(self):
         data = []

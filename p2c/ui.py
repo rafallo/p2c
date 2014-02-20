@@ -11,7 +11,9 @@ class TorrentInfo(object):
         self.leechers = leechers
         self.kwargs = kwargs
 
-        self._info = None
+        self.description = None
+        self.poster = None
+        self.title = None
 
     def get_magnet(self):
         return self.kwargs['magnet']
@@ -31,36 +33,26 @@ class TorrentInfo(object):
             return 0
         elif self.seeders < 50 and self.leechers < 200:
             return 1
-        # twice more leechers than seeds or less than 1000 seeds
+        # twice more leechers tinfohan seeds or less than 1000 seeds
         elif self.seeders * 2 < self.leechers or self.seeders < 1000:
             return 2
         else:
             return 3
 
-    def get_poster(self):
-        if self._info is None:
-            self._get_additional_info()
-        if 'poster_path' in self._info and self._info['poster_path']:
-            return client.base_url + self._info['poster_path']
+    def get_additional_info(self):
+        info = client.match_title(self.label) or {}
 
-    def get_verbose_title(self):
-        if self._info is None:
-            self._get_additional_info()
-        return self._info.get('title', None)
+        self.title = info.get('title', None)
+        if 'poster_path' in info and info['poster_path']:
+            self.poster = client.base_url + info['poster_path']
 
-    def get_description(self):
-        if self._info is None:
-            self._get_additional_info()
-        desc = ""
-        if 'release_date' in self._info:
-            desc += "Release date: {}\n".format(self._info['release_date'])
-        if 'vote_average' in self._info:
-            desc += "Vote average: {}\n".format(self._info['vote_average'])
-        return desc
+        if 'release_date' in info or 'vote_average' in info:
+            self.description = ""
+            if 'release_date' in info:
+                self.description += "Release date: {}\n".format(info['release_date'])
+            if 'vote_average' in info:
+                self.description += "Vote average: {}\n".format(info['vote_average'])
 
-    def _get_additional_info(self):
-        self._info = {}
-        self._info = client.match_title(self.label) or {}
 
 
 class CategoryInfo(object):

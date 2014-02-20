@@ -16,64 +16,37 @@ Rectangle {
     signal movieClicked(int index)
     signal searchQuery(string query)
 
+    // actions
+    signal exitAction()
+
     onCategoryClicked: {
         search.text = ''
         search.focus = false
     }
 
     // categories
-    Item {
+    ScrollView {
         id: menuBar
-        width: 132
+        anchors.margins: 4
+        anchors.top: search.bottom
         height: mainWindow.height - 8
-        Text {
-            text: "Search"
-            color: 'gray'
-            anchors.top: parent.top
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.topMargin: 5
-            width: 120
-            height: 30
-            horizontalAlignment: TextInput.AlignHCenter
-            visible: search.text.length == 0
-            font { family: "Nokia Sans S60"; pixelSize: 16 }
-        }
+        width: 132
+        x: 4
+        y: 4
 
-        TextInput {
-            font { family: "Nokia Sans S60"; pixelSize: 16 }
-            id: search
-            anchors.top: parent.top
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.topMargin: 5
-            width: 120
-            height: 30
-            horizontalAlignment: TextInput.AlignHCenter
-            onTextChanged: {
-                searchQuery(text)
-            }
-        }
-        ScrollView {
-            anchors.margins: 4
-            anchors.top: search.bottom
-            height: mainWindow.height - 8-40
-            width: 132
-            x: 4
-            y: 4
-
-            Column {
-                spacing: 4
-                Repeater {
-                    id: rep
-                    model: categoriesModel
-                    objectName: "categoriesContainer"
-                    Tile {
-                        titleText: name
-                        subtitleText: source
-                        backgroundImage: poster
-                        resizableForMoreInfo: false
-                        onTileClicked: {
-                            categoryClicked(index)
-                        }
+        Column {
+            spacing: 4
+            Repeater {
+                id: rep
+                model: categoriesModel
+                objectName: "categoriesContainer"
+                Tile {
+                    titleText: name
+                    subtitleText: source
+                    backgroundImage: poster
+                    resizableForMoreInfo: false
+                    onTileClicked: {
+                        categoryClicked(index)
                     }
                 }
             }
@@ -116,5 +89,10 @@ Rectangle {
     Player {
         width: mainWindow.width
         height: mainWindow.height
+    }
+
+    Sidebar{
+        id: sidebar
+        onExit: exitAction()
     }
 }

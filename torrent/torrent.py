@@ -48,7 +48,7 @@ class Torrent(object):
         self._priority_thread_stop = Event()
 
         self._priority_timer = None
-
+        # currently downloading Movie
         self._downloading = None
 
     def __del__(self):
@@ -91,34 +91,17 @@ class Torrent(object):
             self._create_movies()
         return list(self.files.values())
 
-    def _create_movies(self):
-        info = self.get_torrent_info()
-        files = info.files()
-
-        self.piece_length = info.piece_length()
-        self.priority_interval = settings.PRIORITY_INTERVAL * self.piece_length / (
-            1024 ** 2)
-
-        self._jump = int(settings.DOWNLOAD_PIECE_SIZE / self.piece_length) + 1
-
-        self.files = {}
-        for file in files:
-            ext = os.path.splitext(file.path)[1]
-            if ext and ext[1:].lower() in settings.SUPPORTED_MOVIE_EXTENSIONS:
-                first_piece = int(file.offset / self.piece_length)
-                last_piece = int((file.size + file.offset) / self.piece_length)
-                self.files[file.path] = Movie(path=file.path,
-                    size=file.size, first_piece=first_piece,
-                    last_piece=last_piece,
-                    piece_length=self.piece_length,
-                    download_dir=self._get_download_dir())
-
     def download_file(self, filename:str):
         if not filename in self.get_movies_filelist():
             raise Exception("filename not found in torrent")
         self._prioritize_to_none()
         self._downloading = self.files[filename]
         self._run_torrent_threads()
+
+    def pause_download(self):
+        self._stop_torrent_threads()
+        self.torrent_handler.pause()
+        self._downloading = None
 
     def has_torrent_info(self):
         """
@@ -170,13 +153,40 @@ class Torrent(object):
         }
         return data
 
+    def get_seconds_to_buffer(self):
+        rate = self.get_status()['download_rate']
+        if(rate > 100 * 1024):
+            # round to 100 kbs, 200 kbs, 300 kbs
+            rate = int(rate / (100 * 1024)) * 100 * 1024
+        movie = self.get_downloading_movie()
+        # minimum rate
+        if movie and rate > 30 * 1024:
+            return int(movie.pieces_to_play * movie.piece_length / rate)
+
     def get_downloading_movie(self):
         return self._downloading
 
-    def pause_download(self):
-        self._stop_torrent_threads()
-        self.torrent_handler.pause()
-        self._downloading = None
+    def _create_movies(self):
+        info = self.get_torrent_info()
+        files = info.files()
+
+        self.piece_length = info.piece_length()
+        self.priority_interval = settings.PRIORITY_INTERVAL * self.piece_length / (
+            1024 ** 2)
+
+        self._jump = int(settings.DOWNLOAD_PIECE_SIZE / self.piece_length) + 1
+
+        self.files = {}
+        for file in files:
+            ext = os.path.splitext(file.path)[1]
+            if ext and ext[1:].lower() in settings.SUPPORTED_MOVIE_EXTENSIONS:
+                first_piece = int(file.offset / self.piece_length)
+                last_piece = int((file.size + file.offset) / self.piece_length)
+                self.files[file.path] = Movie(path=file.path,
+                    size=file.size, first_piece=first_piece,
+                    last_piece=last_piece,
+                    piece_length=self.piece_length,
+                    download_dir=self._get_download_dir())
 
     def _update_movies_progress(self):
         """
@@ -193,7 +203,7 @@ class Torrent(object):
                 counter += 1
             else:
                 break
-            #        logger.debug("download_pieces inside thread is: {}".format(counter))
+                #        logger.debug("download_pieces inside thread is: {}".format(counter))
         movie.downloaded_pieces = counter
 
     def _manage_pieces_priority(self):
@@ -203,6 +213,8 @@ class Torrent(object):
         """
         p_downloaded = self.torrent_handler.status().pieces
         movie = self.get_downloading_movie()
+        if not movie:
+            return
         first_piece, last_piece = movie.cur_first_piece, movie.cur_last_piece
         if not False in p_downloaded[first_piece:first_piece + self._jump + 1]:
             # all block downloaded
@@ -246,7 +258,6 @@ class Torrent(object):
                 self._priority_timer = Timer(self.priority_interval,
                     self._manage_pieces_priority)
                 self._priority_timer.start()
-
 
 
     def _stop_torrent_threads(self):

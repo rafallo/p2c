@@ -66,6 +66,7 @@ Rectangle {
             }
         }
     }
+    // TODO: move belowed MouseArea to playerbar component (like in Sidebar component)
     MouseArea {
         anchors.bottom: parent.bottom
         width: parent.width
@@ -78,7 +79,7 @@ Rectangle {
             playerBar.hide()
         }
     }
-    PlayerBar {
+    Playerbar {
         Behavior on y{ PropertyAnimation {} }
         id: playerBar
         y: parent.height - playerBar.height

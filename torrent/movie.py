@@ -30,13 +30,15 @@ class Movie(object):
         return float(self.downloaded_pieces) / \
                float(self.last_piece - self.first_piece)
 
+    @property
+    def pieces_to_play(self):
+        return max(0,(settings.DOWNLOAD_PIECE_SIZE / self.piece_length + 1) - self.downloaded_pieces)
+
     def can_play(self):
         # TODO: make it better, more intelligent
         # if downloaded block is greater than DOWNLOAD_PIECE_SIZE
         logger.debug("downloaded pieces: {}, piece_length: {}".format(self.downloaded_pieces, self.piece_length))
-        if self.downloaded_pieces * self.piece_length > settings.DOWNLOAD_PIECE_SIZE:
-            return True
-        return False
+        return self.pieces_to_play == 0
 
     def get_target_path(self):
         return os.path.join(self.download_dir, self.path)

@@ -4,11 +4,8 @@ from PyQt5.QtCore import QUrl, QTimer
 from gui.qml.classes import Tile
 from gui.qml.deferred import SetMoviesThread, SearchThread
 from p2c.app import P2CDaemon
-from p2c.ui import TorrentInfo
 from torrent.movie import Movie
 from torrent.torrent import Torrent
-
-
 
 
 class P2CQMLApplication(QtGui.QGuiApplication):
@@ -28,14 +25,13 @@ class P2CQMLApplication(QtGui.QGuiApplication):
 
         # set context variables
         self.categories = []
-        self.movies = []
         self._rctx.setContextProperty("categoriesModel", self.categories)
-        self.movies = []
-        self._rctx.setContextProperty("moviesModel", self.movies)
-
+        self.tiles = []
+        self.torrents = []
+        self._rctx.setContextProperty("moviesModel", self.tiles)
 
         self._view.setSource(QtCore.QUrl('qml.qml'))
-#        self.view.showFullScreen()
+        #        self._view.showFullScreen()
         self._view.show()
 
     def connect_daemon(self, daemon: P2CDaemon):
@@ -47,13 +43,29 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         self._set_movie_status("Ready to play!")
         self._set_media(movie)
         self._daemon.play(movie)
+        self._set_additional_media_info()
 
     def buffer(self, movie: Movie):
-        self._set_movie_status("Buffering...")
+        seconds = self._current_torrent.get_seconds_to_buffer()
+        info = "just started"
+        if seconds:
+            if seconds < 15:
+                info = "just a moment"
+            else:
+                # rount to minutes
+                minutes = int(seconds / 60) + 1
+                if minutes == 1:
+                    info = "1 minute"
+                else:
+                    info = "{} minutes".format(minutes)
+        self._set_movie_status("Buffering... ({})".format(info))
         self._daemon.buffer(movie)
+        self._set_additional_media_info()
 
     def wait_for_metadata(self):
         self._set_movie_status("Getting metadata...")
+        if self._current_torrent:
+            self._set_additional_media_info(self._current_torrent.name)
 
     def select_movie(self, torrent: Torrent):
         movies = torrent.get_movies()
@@ -63,6 +75,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
     def update_status(self):
         torrent = self._current_torrent
         if torrent:
+
             if(torrent.has_torrent_info()):
                 movie = self.select_movie(torrent)
                 torrent.download_file(movie.path)
@@ -73,6 +86,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
                         self.buffer(movie)
             else:
                 self.wait_for_metadata()
+
         else:
             self.wait_for_metadata()
 
@@ -84,8 +98,10 @@ class P2CQMLApplication(QtGui.QGuiApplication):
                 if movie:
                     data['movie'] = movie.name
                     if self.media_player:
-                        self.positionSlider.setBackgroundValue(movie.progress * self.media_player.duration())
-                    data['movie progress'] = "{0:.2f}%".format(movie.progress * 100)
+                        self.positionSlider.setBackgroundValue(
+                            movie.progress * self.media_player.duration())
+                    data['movie progress'] = "{0:.2f}%".format(
+                        movie.progress * 100)
                     data['can_play'] = movie.can_play()
                 data.update(torrent.get_status())
                 # TODO: buggy due to setting priority to 0
@@ -93,10 +109,11 @@ class P2CQMLApplication(QtGui.QGuiApplication):
                     del data['progress']
                 else:
                     data['progress'] = "{0:.2f}%".format(data['progress'] * 100)
-                data['download_rate'] = "{0:.2f} kb/s".format(data['download_rate']/1000)
+                data['download_rate'] = "{0:.2f} kb/s".format(
+                    data['download_rate'] / 1000)
             else:
                 data['status'] = "Getting metadata"
-            text = "\n".join(["{}: {}".format(k,data[k]) for k in data])
+            text = "\n".join(["{}: {}".format(k, data[k]) for k in data])
 
     def on_category_clicked(self, index):
         # clear list
@@ -115,15 +132,15 @@ class P2CQMLApplication(QtGui.QGuiApplication):
     def on_movie_clicked(self, index):
         self._view.rootObject().setProperty("isMovieScene", True)
 
-        torrent_ui = self._current_category.get_torrents(limit=20)[index]
+        torrent_ui = self.torrents[index]
         self._current_torrent = self._daemon.get_torrent(torrent_ui)
-        self._current_torrent_info =torrent_ui
+        self._current_torrent_info = torrent_ui
         self.update_status()
 
     def on_search(self, query):
         if len(query) < 3:
             return
-        # clear list
+            # clear list
         self._set_torrents([])
 
         self._movies_thread = None
@@ -131,12 +148,16 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         self._search_thread.start()
         self._search_thread.got_movies.connect(self._threaded_set_torrents)
 
+    def on_exit(self):
+        self.quit()
 
     def _connect_signals(self):
-        self._view.rootObject().categoryClicked.connect(self.on_category_clicked)
+        self._view.rootObject().categoryClicked.connect(
+            self.on_category_clicked)
         self._view.rootObject().movieClicked.connect(self.on_movie_clicked)
         self._view.rootObject().movieClicked.connect(self.on_movie_clicked)
         self._view.rootObject().searchQuery.connect(self.on_search)
+        self._view.rootObject().exitAction.connect(self.on_exit)
         self._status_timer.timeout.connect(self.update_status)
         self._status_timer.start(500)
 
@@ -144,13 +165,15 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         self._rctx.setContextProperty("movieStatus", text)
 
     def _set_media(self, movie: Movie):
-       file_name = movie.get_target_path()
-       self._rctx.setContextProperty("movieSource", QUrl.fromLocalFile(file_name))
-       self._set_additional_media_info()
+        file_name = movie.get_target_path()
+        self._rctx.setContextProperty("movieSource",
+            QUrl.fromLocalFile(file_name))
 
-    def _set_additional_media_info(self):
-       self._rctx.setContextProperty("title", self._current_torrent_info.get_verbose_title())
-       self._rctx.setContextProperty("poster", self._current_torrent_info.get_poster())
+    def _set_additional_media_info(self, title=None):
+        self._rctx.setContextProperty("title",
+            title or self._current_torrent_info.title or self._current_torrent_info.label)
+        self._rctx.setContextProperty("poster",
+            self._current_torrent_info.poster if self._current_torrent_info  and self._current_torrent_info.poster else '')
 
     def _set_categories(self):
         data = []
@@ -166,14 +189,25 @@ class P2CQMLApplication(QtGui.QGuiApplication):
 
     def _set_torrents(self, data):
         # only existing tiles
-        for (tile, (movie,source,poster, description)) in zip(self.movies, data[:len(self.movies)]):
-            tile.name = movie
-            tile.source = source
-            tile.poster = poster
-            tile.description = description
+        for (tile, torrent_info) in zip(self.tiles, data[:len(self.tiles)]):
+            if torrent_info.title:
+                tile.name = torrent_info.title
+                tile.source = torrent_info.label
+            else:
+                tile.name = torrent_info.label
+                tile.source = None
+            tile.poster = torrent_info.poster
+            tile.description = torrent_info.description
 
-        if len(data) != len(self.movies):
-            for movie, source, poster, description in data[len(self.movies):]:
-                self.movies.append(Tile(movie, source, poster, description))
+        if len(data) != len(self.tiles):
+            for torrent_info in data[len(self.tiles):]:
+                if torrent_info.title:
+                    tile = Tile(torrent_info.title, torrent_info.label,
+                        torrent_info.poster, torrent_info.description)
+                else:
+                    tile = Tile(torrent_info.label, None, torrent_info.poster,
+                        torrent_info.description)
+                self.tiles.append(tile)
 
-            self._rctx.setContextProperty("moviesModel", self.movies)
+            self._rctx.setContextProperty("moviesModel", self.tiles)
+        self.torrents = data

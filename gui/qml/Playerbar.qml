@@ -4,6 +4,12 @@ Rectangle {
     width: playerArea.width
     height: 140
     color: "black"
+
+    // 0.0 - 1.0
+    signal changeVolume(real level)
+
+    property bool muted: false
+
     SeekControl {
         anchors {
             left: parent.left
@@ -41,6 +47,19 @@ Rectangle {
             }
         }
 
+        Image {
+            width: 40
+            height: 40
+
+            source: muted===true?"icons/mute.svg":"icons/volume.svg"
+            MouseArea {
+                anchors.fill: parent
+                onPressed: {
+                    muted = !muted
+                    changeVolume(muted===true?0:1)
+                }
+            }
+        }
         Image {
             width: 40
             height: 40

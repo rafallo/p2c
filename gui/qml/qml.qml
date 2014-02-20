@@ -84,7 +84,21 @@ Rectangle {
             }
         }
     }
-
+    Rectangle {
+        visible: loadingMask
+        anchors {
+            fill: movies
+        }
+        color: Qt.rgba(255,255,255, 0.7)
+        AnimatedImage {
+            visible: loadingMask
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            width: 32
+            height: 32
+            source: "icons/loader.gif"
+        }
+    }
 
     Player {
         width: mainWindow.width

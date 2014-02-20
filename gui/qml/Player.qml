@@ -93,6 +93,10 @@ Rectangle {
         function hide(){
             y =  parent.height
         }
+
+        onChangeVolume:{
+            mediaPlayer.volume = level
+        }
     }
 
 }

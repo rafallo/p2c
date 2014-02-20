@@ -29,6 +29,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         self.tiles = []
         self.torrents = []
         self._rctx.setContextProperty("moviesModel", self.tiles)
+        self._set_loading(False)
 
         self._view.setSource(QtCore.QUrl('qml.qml'))
         #        self._view.showFullScreen()
@@ -117,7 +118,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
 
     def on_category_clicked(self, index):
         # clear list
-        self._set_torrents([])
+        self._set_torrents([], loading=True)
 
         category = self._daemon.get_categories()[index]
         self._current_category = category
@@ -141,7 +142,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         if len(query) < 3:
             return
             # clear list
-        self._set_torrents([])
+        self._set_torrents([],loading=True)
 
         self._movies_thread = None
         self._search_thread = SearchThread(query, self._daemon.search)
@@ -187,7 +188,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         if thread == self._movies_thread or thread == self._search_thread:
             self._set_torrents(data)
 
-    def _set_torrents(self, data):
+    def _set_torrents(self, data, loading=False):
         # only existing tiles
         for (tile, torrent_info) in zip(self.tiles, data[:len(self.tiles)]):
             if torrent_info.title:
@@ -211,3 +212,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
 
             self._rctx.setContextProperty("moviesModel", self.tiles)
         self.torrents = data
+        self._set_loading(loading)
+
+    def _set_loading(self, loading):
+        self._rctx.setContextProperty("loadingMask", loading)

@@ -2,7 +2,7 @@
 import json
 import logging
 import requests
-from p2c import secret
+from catalogs import secret
 
 logger = logging.getLogger(__name__)
 

@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
-from http.server import HTTPServer
-from threading import Thread
 from unittest import TestCase
-import time
-from p2c.services.base import BaseService
-from p2c.services.tpb import TPBService
+from catalogs.services.base import BaseService
+from catalogs.services.tpb import TPBService
 from p2c.ui import TorrentInfo, CategoryInfo
-from test_utils import TestSimpleHTTPRequestHandler
 
 class TPBServiceTestCase(TestCase):
     def setUp(self):

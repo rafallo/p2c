@@ -10,6 +10,7 @@ Rectangle {
 
     property int latestIndex: 0;
     property bool isMovieScene: false;
+    property int movieDuration: 0;
     anchors.margins:5
 
     signal categoryClicked(int index)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from urllib import request
 from bs4 import BeautifulSoup
-from .base import  BaseService
+from catalogs.services.base import  BaseService
 from p2c.ui import CategoryInfo
 
 _ = lambda x: x

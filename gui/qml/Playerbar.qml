@@ -19,7 +19,7 @@ Rectangle {
             topMargin: 10
             top: parent.top
         }
-        duration: mediaPlayer ? mediaPlayer.duration : 0
+        duration: mediaPlayer ? (movieDuration === 0 ? mediaPlayer.duration : movieDuration) : 0
         playPosition: mediaPlayer ? mediaPlayer.position : 0
         onSeekPositionChanged: { mediaPlayer.seek(seekPosition); }
     }
@@ -55,6 +55,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onPressed: {
+                    console.log(typeof movieDuration)
                     muted = !muted
                     changeVolume(muted===true?0:1)
                 }

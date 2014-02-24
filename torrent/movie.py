@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
+import datetime
+import re
+import subprocess
 import os
 import logging
 from p2c import settings
 from p2c.exceptions import NotDownloadingException
 
 logger = logging.getLogger(__name__)
+
+DURATION_RE = "Duration: (?P<hours>[0-9]{2}):(?P<minutes>[0-9]{2}):(?P<seconds>[0-9]{2})"
 
 class Movie(object):
     def __init__(self, path, size, first_piece, last_piece, piece_length, download_dir):
@@ -40,5 +45,16 @@ class Movie(object):
         logger.debug("downloaded pieces: {}, piece_length: {}".format(self.downloaded_pieces, self.piece_length))
         return self.pieces_to_play == 0
 
-    def get_target_path(self):
+    def get_target_path(self) -> str:
         return os.path.join(self.download_dir, self.path)
+
+    def get_movie_duration(self) -> datetime.timedelta:
+        result = str(subprocess.check_output(["ffprobe", os.path.normpath(self.get_target_path())], stderr=subprocess.STDOUT))
+        search = re.search(DURATION_RE, result)
+        if search:
+            tdelta = datetime.timedelta(
+                hours = int(search.groupdict()['hours']),
+                minutes = int(search.groupdict()['minutes']),
+                seconds= int(search.groupdict()['seconds']))
+            return tdelta
+

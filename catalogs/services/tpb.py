@@ -3,7 +3,7 @@ import logging
 from urllib import request
 from bs4 import BeautifulSoup
 import re
-from.base import BaseService
+from catalogs.services.base import BaseService
 from p2c.ui import CategoryInfo
 
 _ = lambda x: x

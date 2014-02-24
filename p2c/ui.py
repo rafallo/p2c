@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from p2c.info_clients.tmdbclient import TMDBApiClient
+from catalogs.info_clients.tmdbclient import TMDBApiClient
 
 client = TMDBApiClient()
 

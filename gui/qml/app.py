@@ -68,7 +68,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         if self._current_torrent:
             self._set_additional_media_info(self._current_torrent.name)
 
-    def select_movie(self, torrent: Torrent):
+    def select_movie(self, torrent: Torrent) -> Movie:
         movies = torrent.get_movies()
         # TODO: show dialog with movie selecting instead of doing it automatically
         return max(movies, key=lambda x: x.size)
@@ -76,10 +76,10 @@ class P2CQMLApplication(QtGui.QGuiApplication):
     def update_status(self):
         torrent = self._current_torrent
         if torrent:
-
             if(torrent.has_torrent_info()):
                 movie = self.select_movie(torrent)
                 torrent.download_file(movie.path)
+                self._set_duration(movie)
                 if not self._daemon.is_playing(movie):
                     if(movie.can_play()):
                         self.play(movie)
@@ -87,34 +87,8 @@ class P2CQMLApplication(QtGui.QGuiApplication):
                         self.buffer(movie)
             else:
                 self.wait_for_metadata()
-
         else:
             self.wait_for_metadata()
-
-        return
-        if self.current_torrent:
-            torrent = self.current_torrent
-            if torrent and torrent.has_torrent_info():
-                movie = torrent.get_downloading_movie()
-                if movie:
-                    data['movie'] = movie.name
-                    if self.media_player:
-                        self.positionSlider.setBackgroundValue(
-                            movie.progress * self.media_player.duration())
-                    data['movie progress'] = "{0:.2f}%".format(
-                        movie.progress * 100)
-                    data['can_play'] = movie.can_play()
-                data.update(torrent.get_status())
-                # TODO: buggy due to setting priority to 0
-                if data['state'] == 'downloading':
-                    del data['progress']
-                else:
-                    data['progress'] = "{0:.2f}%".format(data['progress'] * 100)
-                data['download_rate'] = "{0:.2f} kb/s".format(
-                    data['download_rate'] / 1000)
-            else:
-                data['status'] = "Getting metadata"
-            text = "\n".join(["{}: {}".format(k, data[k]) for k in data])
 
     def on_category_clicked(self, index):
         # clear list
@@ -216,3 +190,8 @@ class P2CQMLApplication(QtGui.QGuiApplication):
 
     def _set_loading(self, loading):
         self._rctx.setContextProperty("loadingMask", loading)
+
+    def _set_duration(self, movie:Movie):
+        tdelta = movie.get_movie_duration()
+        if tdelta:
+            self._view.rootObject().setProperty("movieDuration", tdelta.seconds * 1000)

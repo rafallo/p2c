@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 from http.server import HTTPServer
 import logging
 from threading import Thread
@@ -11,6 +12,7 @@ import os
 from p2c import settings
 from test_utils import TestSimpleHTTPRequestHandler
 from torrent.manager import FileManager
+from torrent.movie import Movie
 from torrent.torrent import Torrent
 import libtorrent as lt
 
@@ -213,3 +215,24 @@ class FileManagerTestCase(AbstractTorrentTestCase):
         self.assertIsInstance(t_obj, Torrent)
         self.assertEqual(t_obj.source_type, "TORRENT")
 
+class MovieTestCase(TestCase):
+    def _create_movie(self):
+        filename = os.path.join("movie", "movie.mp4")
+        piece_length = 128 * 1024
+        filesize = os.stat(os.path.join(settings.TEST_DIR, filename)).st_size
+        self.movie = Movie(filename, filesize,
+            0, filesize / piece_length, piece_length, settings.TEST_DIR)
+
+    def setUp(self):
+        self._create_movie()
+
+    def tearDown(self):
+        try:
+            shutil.rmtree(settings.DOWNLOAD_DIR)
+        except OSError:
+            pass
+
+    def test_get_movie_duration(self):
+        tdelta = self.movie.get_movie_duration()
+        self.assertIsInstance(tdelta, datetime.timedelta)
+        self.assertEqual(tdelta.seconds, 180)

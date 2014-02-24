@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from threading import Thread, Lock
-from.abstractbase import AbstractService
+from .abstractbase import AbstractService
 from p2c.ui import CategoryInfo, TorrentInfo
-from p2c.utils import slugify
+from catalogs.utils import slugify
 
 _ = lambda x: x
 

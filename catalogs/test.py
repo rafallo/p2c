@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
-from p2c.info_clients.omdbclient import OMDBApiClient
-from p2c.info_clients.tmdbclient import TMDBApiClient
+from catalogs.info_clients.omdbclient import OMDBApiClient
+from catalogs.info_clients.tmdbclient import TMDBApiClient
 
 class OMDBApiClientTestCase(TestCase):
     def setUp(self):

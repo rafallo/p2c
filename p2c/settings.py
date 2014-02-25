@@ -21,8 +21,8 @@ except OSError:
 
 STORAGE_PATH = os.path.join(PROJECT_ROOT, "tmp", "configuration.json")
 
-START_PORT = 6821
-END_PORT = 6831
+START_PORT = 6841
+END_PORT = 6851
 
 SUPPORTED_MOVIE_EXTENSIONS = (
 "mp4", "avi", "mkv", "ogv", "ogg", "mpeg", "flv", "wmv")

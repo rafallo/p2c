@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import base64
+import gzip
 import hashlib
 from threading import Thread
+from urllib import request
 import os
 import logging
 from urllib.parse import urlparse
@@ -46,6 +48,13 @@ class FileManager(object):
         if source_type == "TORRENT":
             def retrieve_and_save(url, source_path, session, t_obj):
                 source = urllib.request.urlretrieve(url, source_path)[0]
+                site = request.urlopen(url)
+                content = site.read()
+                if site.info().get('Content-Encoding') == 'gzip':
+                    content = gzip.decompress(content)
+                f = open(source_path, "wb")
+                f.write(content)
+                f.close()
                 t_obj.set_source(source, session)
 
             t_obj = self._create_torrent_handler(source_type, None,

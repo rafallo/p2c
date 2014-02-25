@@ -56,12 +56,10 @@ class TorrentInfo(object):
 
 
 class CategoryInfo(object):
-    def __init__(self, slug: str, label:str, service,
-                 kwargs:dict):
-        self.slug = slug
+    def __init__(self, id: str, label:str, service):
+        self.id = id
         self.label = label
         self.service = service
-        self.kwargs = kwargs
 
     def get_torrents(self, skip: int=0, limit: int=30) -> TorrentInfo:
         return self.service.get_torrents_list(self, skip=skip, limit=limit)

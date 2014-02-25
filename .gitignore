@@ -39,3 +39,4 @@ nosetests.xml
 *.user
 *.log
 secret.py
+tmp/

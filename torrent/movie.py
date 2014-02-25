@@ -49,12 +49,13 @@ class Movie(object):
         return os.path.join(self.download_dir, self.path)
 
     def get_movie_duration(self) -> datetime.timedelta:
-        result = str(subprocess.check_output(["ffprobe", os.path.normpath(self.get_target_path())], stderr=subprocess.STDOUT))
+        try:
+            result = str(subprocess.check_output(["ffprobe", os.path.normpath(self.get_target_path())], stderr=subprocess.STDOUT))
+        except subprocess.CalledProcessError:
+            return
         search = re.search(DURATION_RE, result)
         if search:
-            tdelta = datetime.timedelta(
+            return datetime.timedelta(
                 hours = int(search.groupdict()['hours']),
                 minutes = int(search.groupdict()['minutes']),
                 seconds= int(search.groupdict()['seconds']))
-            return tdelta
-

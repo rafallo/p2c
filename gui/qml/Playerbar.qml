@@ -32,6 +32,11 @@ Rectangle {
             bottomMargin: 30
         }
         spacing: 20
+        Text {
+            text: debugText
+            color: "white"
+        }
+
         Image {
             height: 40
             source: poster

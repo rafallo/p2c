@@ -85,6 +85,16 @@ class P2CQMLApplication(QtGui.QGuiApplication):
                         self.play(movie)
                     else:
                         self.buffer(movie)
+
+                ### DEBUG INFO
+                text = "s: %s, num p: %s, rate: %s kbs" % (
+                    torrent.get_status()['state'],
+                    torrent.get_status()['num_peers'],
+                    int(torrent.get_status()['download_rate'] /1024),
+                )
+                self._view.rootObject().setProperty("debugText", text)
+                ### END DEBUG INFO
+
             else:
                 self.wait_for_metadata()
         else:

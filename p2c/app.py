@@ -2,6 +2,7 @@
 import json
 import logging
 import threading
+from catalogs.services.kickass import KickAssService
 from p2c import settings
 from p2c.exceptions import SessionNotBindedException
 from catalogs.services.legittorrents import LegitTorrentsService
@@ -10,15 +11,16 @@ from torrent.manager import FileManager
 from p2c.ui import TorrentInfo
 import libtorrent as lt
 from torrent.movie import Movie
+from torrent.torrent import Torrent
 
 logger = logging.getLogger(__name__)
 
 class P2CDaemon(object):
     def __init__(self):
         self.manager = FileManager()
-        self.services = [LegitTorrentsService(), TPBService()]
-#        self.services = [LegitTorrentsService()]
-#        self.services = [TPBService()]
+        self.services = [LegitTorrentsService(), KickAssService(), TPBService()]
+        #        self.services = [LegitTorrentsService()]
+        #        self.services = [TPBService()]
         self._init_session()
 
         threading.Thread(target=self._prefill_cache).start()
@@ -54,10 +56,10 @@ class P2CDaemon(object):
         [output.extend(service.search(query)) for service in self.services]
         return output
 
-    def get_torrent(self, torrent: TorrentInfo):
+    def get_torrent(self, torrent: TorrentInfo) -> Torrent:
         return self.manager.get_torrent_handler(
             torrent.label, self.session, torrent.get_magnet(),
-                    torrent.get_torrent_file())
+            torrent.get_torrent_file())
 
     def _init_session(self):
         dht_state = self._get_storage_value("dht_state")

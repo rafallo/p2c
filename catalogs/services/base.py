@@ -52,8 +52,7 @@ class BaseService(AbstractService):
         if limit is None:
             limit = self.page_size
             # category.id or base video category
-        category_id = category.kwargs[
-                      'id'] if category else self.video_category_id
+        category_id = category.id if category else self.video_category_id
 
         self._get_torrents(category_id, skip, limit, None)
         return [i for i in self.torrents[(category_id, None)][skip:limit + skip]

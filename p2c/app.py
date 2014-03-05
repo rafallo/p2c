@@ -20,7 +20,6 @@ class P2CDaemon(object):
         self.manager = FileManager()
         self.services = [LegitTorrentsService(), KickAssService(), TPBService()]
         #        self.services = [LegitTorrentsService()]
-        #        self.services = [TPBService()]
         self._init_session()
 
         threading.Thread(target=self._prefill_cache).start()

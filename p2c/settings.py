@@ -12,6 +12,11 @@ try:
 except OSError:
     pass
 
+try:
+    os.makedirs(LOG_DIR)
+except OSError:
+    pass
+
 TEST_DIR = os.path.join(PROJECT_ROOT, "test_data")
 
 try:

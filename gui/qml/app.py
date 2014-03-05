@@ -33,8 +33,8 @@ class P2CQMLApplication(QGuiApplication):
         self._rctx.setContextProperty("moviesModel", self.tiles)
         self._set_loading(False)
         self._view.setSource(QUrl('qrc:/qml.qml'))
-        #        self._view.showFullScreen()
-        self._view.show()
+        self._view.showFullScreen()
+#        self._view.show()
 
     def connect_daemon(self, daemon: P2CDaemon):
         self._daemon = daemon
@@ -71,6 +71,8 @@ class P2CQMLApplication(QGuiApplication):
 
     def select_movie(self, torrent: Torrent) -> Movie:
         movies = torrent.get_movies()
+        if len(movies) == 0:
+            return
         # TODO: show dialog with movie selecting instead of doing it automatically
         return max(movies, key=lambda x: x.size)
 
@@ -79,20 +81,26 @@ class P2CQMLApplication(QGuiApplication):
         if torrent:
             if(torrent.has_torrent_info()):
                 movie = self.select_movie(torrent)
+                if not movie:
+                    self._set_movie_status("No movie in this torrent. Please, select another.")
+                    return
+
                 torrent.download_file(movie.path)
                 self._set_duration(movie)
                 if not self._daemon.is_playing(movie):
                     if(movie.can_play()):
+#                        print(movie.get_subtitles())
                         self.play(movie)
                     else:
                         self.buffer(movie)
 
                 ### DEBUG INFO
-                text = "s: %s, num p: %s, rate: %s kbs" % (
+                text = "s: %s, num p: %s, rate: %s kbs, p_rate: %s kbs" % (
                     torrent.get_status()['state'],
                     torrent.get_status()['num_peers'],
-                    int(torrent.get_status()['download_rate'] /1024),
-                )
+                    int(torrent.get_status()['download_rate'] / 1024),
+                    int(torrent.get_status()['download_payload_rate'] / 1024),
+                    )
                 self._view.rootObject().setProperty("debugText", text)
                 ### END DEBUG INFO
 
@@ -127,7 +135,7 @@ class P2CQMLApplication(QGuiApplication):
         if len(query) < 3:
             return
             # clear list
-        self._set_torrents([],loading=True)
+        self._set_torrents([], loading=True)
 
         self._movies_thread = None
         self._search_thread = SearchThread(query, self._daemon.search)
@@ -205,4 +213,5 @@ class P2CQMLApplication(QGuiApplication):
     def _set_duration(self, movie:Movie):
         tdelta = movie.get_movie_duration()
         if tdelta:
-            self._view.rootObject().setProperty("movieDuration", tdelta.seconds * 1000)
+            self._view.rootObject().setProperty("movieDuration",
+                tdelta.seconds * 1000)

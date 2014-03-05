@@ -3,8 +3,11 @@ import sys, os
 
 base = None
 path_platforms = []
+target_name = "p2c"
+
 if sys.platform == "win32":
     base = "Win32GUI"
+    target_name += ".exe"
     path_platforms = [( "C:\\Qt\\5.2.1\\msvc2012\\plugins\\platforms\\qwindows.dll", "platforms\qwindows.dll" ),
         ( "C:\\Qt\\5.2.1\\msvc2012\\bin\\libEGL.dll", "libEGL.dll" ),
         ( "C:\\Qt\\5.2.1\\msvc2012\\bin\\Qt5MultimediaQuick_p.dll", "Qt5MultimediaQuick_p.dll" ),
@@ -20,10 +23,10 @@ if sys.platform == "win32":
 
 
 exe = Executable(
-    script='gui\qml\main.py',
+    script=os.path.join('gui','qml','main.py'),
     base = base,
     initScript=None,
-    targetName="p2c.exe",
+    targetName=target_name,
     compress=True,
     path=["qml"]
 )

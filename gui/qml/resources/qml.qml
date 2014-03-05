@@ -97,7 +97,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             width: 32
             height: 32
-            source: "qrc:icons/loader.gif"
+            source: "qrc:/icons/loader.gif"
         }
     }
 

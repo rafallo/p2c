@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-PROJECT_ROOT = os.path.join(os.path.dirname(__file__), "..")
+PROJECT_ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
 
 DOWNLOAD_DIR = os.path.join(PROJECT_ROOT, "tmp")
 

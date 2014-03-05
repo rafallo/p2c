@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-from PyQt5 import QtGui, QtCore, QtQuick
-from PyQt5.QtCore import QUrl, QTimer
+from PyQt5.QtCore import QUrl, QTimer, QResource
+from PyQt5.QtGui import QGuiApplication
+from PyQt5.QtQuick import QQuickView
 from gui.qml.classes import Tile
 from gui.qml.deferred import SetMoviesThread, SearchThread
 from p2c.app import P2CDaemon
 from torrent.movie import Movie
 from torrent.torrent import Torrent
+from gui.qml import resources
 
-
-class P2CQMLApplication(QtGui.QGuiApplication):
+class P2CQMLApplication(QGuiApplication):
     def __init__(self, list_of_str):
         super().__init__(list_of_str)
         self._current_category = None
@@ -19,9 +20,10 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         self._search_thread = None
 
     def run_view(self):
-        self._view = QtQuick.QQuickView()
+        self._view = QQuickView()
+        self._view.engine().addImportPath("qml")
         self._rctx = self._view.rootContext()
-        self._view.setResizeMode(QtQuick.QQuickView.SizeRootObjectToView)
+        self._view.setResizeMode(QQuickView.SizeRootObjectToView)
 
         # set context variables
         self.categories = []
@@ -30,8 +32,7 @@ class P2CQMLApplication(QtGui.QGuiApplication):
         self.torrents = []
         self._rctx.setContextProperty("moviesModel", self.tiles)
         self._set_loading(False)
-
-        self._view.setSource(QtCore.QUrl('qml.qml'))
+        self._view.setSource(QUrl('qrc:/qml.qml'))
         #        self._view.showFullScreen()
         self._view.show()
 

@@ -56,7 +56,7 @@ Rectangle {
             width: 40
             height: 40
 
-            source: muted===true?"icons/mute.svg":"icons/volume.svg"
+            source: muted===true?"qrc:icons/mute.svg":"qrc:icons/volume.svg"
             MouseArea {
                 anchors.fill: parent
                 onPressed: {
@@ -69,7 +69,7 @@ Rectangle {
         Image {
             width: 40
             height: 40
-            source: isPlaying===true?"icons/pause.svg":"icons/play.svg"
+            source: isPlaying===true?"qrc:icons/pause.svg":"qrc:icons/play.svg"
             MouseArea {
                 anchors.fill: parent
                 onPressed:isPlaying===true? mediaPlayer.pause():mediaPlayer.play();
@@ -80,7 +80,7 @@ Rectangle {
             width: 40
             height: 40
             anchors.verticalCenter: parent
-            source: isFullScreen===true ? "icons/windowed.svg":"icons/fullscreen.svg"
+            source: isFullScreen===true ? "qrc:icons/windowed.svg":"qrc:icons/fullscreen.svg"
             MouseArea {
                 anchors.fill: parent
                 onPressed: {

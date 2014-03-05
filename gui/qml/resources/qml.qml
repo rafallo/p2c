@@ -2,7 +2,6 @@ import QtQuick 2.1
 import QtQuick.Controls 1.1
 
 
-
 Rectangle {
     width: 945
     height: 600
@@ -98,7 +97,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             width: 32
             height: 32
-            source: "icons/loader.gif"
+            source: "qrc:icons/loader.gif"
         }
     }
 

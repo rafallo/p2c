@@ -50,6 +50,7 @@ class Movie(object):
 
     def get_movie_duration(self) -> datetime.timedelta:
         try:
+            return
             result = str(subprocess.check_output(["ffprobe", os.path.normpath(self.get_target_path())], stderr=subprocess.STDOUT))
         except subprocess.CalledProcessError:
             return

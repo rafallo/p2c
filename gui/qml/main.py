@@ -3,9 +3,15 @@ from datetime import datetime
 import logging
 import sys
 import os
+from PyQt5.QtQml import QQmlEngine
 from p2c import settings
 from p2c.app import P2CDaemon
 from gui.qml.app import P2CQMLApplication
+
+from html.parser import (
+    HTMLParser,
+    HTMLParseError,
+    )
 
 
 try:
@@ -14,8 +20,8 @@ except OSError:
     pass
 
 logging.basicConfig(
-    filename = os.path.join(settings.LOG_DIR, datetime.now().strftime('p2c_%H:%M:%S_%d-%m-%Y.log')),
-    level = logging.DEBUG
+    filename = os.path.join(settings.LOG_DIR, datetime.now().strftime('p2c_%H_%M_%S_%d-%m-%Y.log')),
+    level = logging.CRITICAL
 )
 logging.getLogger('requests').setLevel(logging.CRITICAL)
 logging.getLogger('p2c.info_clients').setLevel(logging.WARNING)
@@ -27,6 +33,8 @@ def main():
     logic = P2CDaemon()
     app.connect_daemon(logic)
     sys.exit(app.exec_())
+
+
 
 
 if __name__ == '__main__':

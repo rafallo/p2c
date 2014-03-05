@@ -4,7 +4,7 @@ import sys, os
 base = None
 path_platforms = []
 target_name = "p2c"
-
+path = None
 if sys.platform == "win32":
     base = "Win32GUI"
     target_name += ".exe"
@@ -12,7 +12,9 @@ if sys.platform == "win32":
         ( "C:\\Qt\\5.2.1\\msvc2012\\bin\\libEGL.dll", "libEGL.dll" ),
         ( "C:\\Qt\\5.2.1\\msvc2012\\bin\\Qt5MultimediaQuick_p.dll", "Qt5MultimediaQuick_p.dll" ),
         ( "C:\\Qt\\5.2.1\\msvc2012\\bin\\Qt5MultimediaWidgets.dll", "Qt5MultimediaWidgets.dll" ),
-        ( "C:\\Qt\\5.2.1\\msvc2012\\bin\\d3dcompiler_46.dll", "d3dcompiler_46.dll" ),]
+        ( "C:\\Qt\\5.2.1\\msvc2012\\bin\\d3dcompiler_46.dll", "d3dcompiler_46.dll" ),
+        ( "gui\\qml\\resources", "resources" )
+        ,]
     # get all dlls from qml dir
     path = "C:\\Qt\\5.2.1\\msvc2012\\qml"
     for root, dirs, files in os.walk(path):
@@ -20,6 +22,14 @@ if sys.platform == "win32":
             if not file.endswith(".pdb"):
                 abs_path = os.path.join(root,file)
                 path_platforms.append((abs_path, os.path.join("qml", os.path.relpath(abs_path, path))))
+
+    # get all imageformats
+    path = "C:\\Qt\\5.2.1\\msvc2012\\plugins\\imageformats"
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if not file.endswith(".pdb"):
+                abs_path = os.path.join(root,file)
+                path_platforms.append((abs_path, os.path.join("imageformats", os.path.relpath(abs_path, path))))
 
 
 exe = Executable(
@@ -44,8 +54,7 @@ options = dict(
         '_gtkagg', '_tkagg', 'bsddb', 'curses', 'pywin.debugger',
         'pywin.debugger.dbgcon', 'pywin.dialogs', 'tcl',
         'Tkconstants', 'Tkinter'
-    ],
-    include_msvcr=True
+    ]
 )
 
 setup(

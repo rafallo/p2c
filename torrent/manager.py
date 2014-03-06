@@ -8,7 +8,7 @@ import os
 import logging
 from urllib.parse import urlparse
 import urllib.request
-from p2c import settings
+import settings
 from torrent.torrent import Torrent
 from torrent.movie import Movie
 

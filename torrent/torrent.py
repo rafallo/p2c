@@ -2,11 +2,11 @@
 import hashlib
 import libtorrent as lt
 import logging
-from threading import Timer, Thread, Condition, Event
+from threading import Timer, Event
 import os
 import time
-from p2c import settings
 from p2c.exceptions import SessionNotBindedException, TorrentHasNotMetadataYet
+import settings
 from torrent.movie import Movie
 
 SOURCE_TYPES = ("MAGNET", "TORRENT")
@@ -147,6 +147,7 @@ class Torrent(object):
                      'checking fastresume']
         data = {
             'download_rate': status.download_rate,
+            'download_payload_rate': status.download_payload_rate,
             'num_peers': status.num_peers,
             'state': state_str[status.state],
             'progress': status.progress

@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from http.server import SimpleHTTPRequestHandler
 import urllib.parse
-from os import path
 import os
-from p2c import settings
+import settings
 
 class TestSimpleHTTPRequestHandler(SimpleHTTPRequestHandler):
     def translate_path(self, path):

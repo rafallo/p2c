@@ -3,10 +3,10 @@ import json
 import logging
 import threading
 from catalogs.services.kickass import KickAssService
-from p2c import settings
 from p2c.exceptions import SessionNotBindedException
 from catalogs.services.legittorrents import LegitTorrentsService
 from catalogs.services.tpb import TPBService
+import settings
 from torrent.manager import FileManager
 from p2c.ui import TorrentInfo
 import libtorrent as lt

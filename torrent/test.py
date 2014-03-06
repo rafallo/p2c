@@ -9,8 +9,8 @@ import time
 from p2c.exceptions import TorrentHasNotMetadataYet
 from pbt.tracker import Tracker
 import os
-from p2c import settings
 from test_utils import TestSimpleHTTPRequestHandler
+import settings
 from torrent.manager import FileManager
 from torrent.movie import Movie
 from torrent.torrent import Torrent

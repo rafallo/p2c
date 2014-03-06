@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-import os
+import os, tempfile
 
-PROJECT_ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
+PROJECT_ROOT = os.path.dirname(__file__)
 
-DOWNLOAD_DIR = os.path.join(PROJECT_ROOT, "tmp")
+TMP_DIR = tempfile.mkdtemp()
 
-LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
+DOWNLOAD_DIR = os.path.join(TMP_DIR, "download")
+
+LOG_DIR = os.path.join(TMP_DIR, "logs")
 
 try:
     os.makedirs(DOWNLOAD_DIR)
@@ -24,7 +26,7 @@ try:
 except OSError:
     pass
 
-STORAGE_PATH = os.path.join(PROJECT_ROOT, "tmp", "configuration.json")
+STORAGE_PATH = os.path.join(TMP_DIR, "download", "configuration.json")
 
 START_PORT = 6841
 END_PORT = 6851

@@ -4,8 +4,7 @@ import re
 import subprocess
 import os
 import logging
-from p2c import settings
-from p2c.exceptions import NotDownloadingException
+import settings
 
 logger = logging.getLogger(__name__)
 

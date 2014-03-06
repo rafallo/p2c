@@ -3,16 +3,10 @@ from datetime import datetime
 import logging
 import sys
 import os
-from PyQt5.QtQml import QQmlEngine
-from p2c import settings
+import settings
 from p2c.app import P2CDaemon
 from gui.qml.app import P2CQMLApplication
-
-from html.parser import (
-    HTMLParser,
-    HTMLParseError,
-    )
-
+from PyQt5.QtQml import QQmlEngine
 
 try:
     os.makedirs(settings.LOG_DIR)
